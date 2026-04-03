@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 1.0
+     SHADOW COUNCIL · Version: 1.1
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -416,7 +416,8 @@ function onReveal(g){
   rc.classList.add('blurred');rc.classList.remove('revealed');
   $('reveal-btn').style.display='block';$('reveal-done-btn').style.display='none';
   if(me.role==='evil'){
-    rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Work your secret word naturally into conversation. Another player is also evil — find them without revealing yourself.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Your secret word</div><div class="password-word">${me.word}</div><div style="font-size:13px;margin-top:8px;opacity:0.7;">The other evil player has a related word. Listen carefully.</div></div></div>`;
+    const partner=Object.values(g.players).find(p=>p.role==='evil'&&p.name!==L.myName);
+    rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Work your secret word naturally into conversation. Find the other evil player — they carry the related word.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Your secret word</div><div class="password-word">${me.word}</div></div><div class="password-box" style="margin-top:8px;"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">The other evil player's word</div><div class="password-word">${partner?partner.word:'?'}</div><div style="font-size:12px;margin-top:4px;opacity:0.6;">You do not know who carries this word.</div></div></div>`;
   }else{
     rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Good</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Two players are hiding secret words in conversation. Listen carefully and find them before it's too late.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;">No secret word.</div><div style="font-size:14px;margin-top:6px;opacity:0.75;">Trust your instincts.</div></div></div>`;
   }
@@ -461,26 +462,37 @@ function onVoting(g){
   const voteCount=Object.keys(votes).length;
   const eligibleCount=active.length;
 
-  // Auto-close when all voted — host triggers it
-  if(L.isHost&&voteCount>=eligibleCount&&eligibleCount>0){closeVoting();return;}
+  const isFinal=active.length<=2;
+  const allPlayers=Object.values(g.players||{});
+  // In final round all original players vote, otherwise only active (non-eliminated)
+  const voterCount=isFinal?allPlayers.length:eligibleCount;
+
+  // Auto-close when all eligible voters have voted — host triggers it
+  if(L.isHost&&voteCount>=voterCount&&voterCount>0){closeVoting();return;}
 
   if(L.isHost){
     $('host-voting-controls').style.display='block';
-    const allVoted=voteCount>=eligibleCount;
-    $('voting-votes-count').textContent=voteCount+' / '+eligibleCount+' voted'+(allVoted?' — closing…':'');
+    const allVoted=voteCount>=voterCount;
+    $('voting-votes-count').textContent=voteCount+' / '+voterCount+' voted'+(allVoted?' — closing…':'');
   }else{
     $('host-voting-controls').style.display='none';
-    $('voting-sub').textContent=voteCount+' of '+eligibleCount+' voted';
+    if(!isFinal) $('voting-sub').textContent=voteCount+' of '+voterCount+' voted';
   }
 
-  if(me&&me.eliminated){
+  const myVote=votes[L.myName]||null;
+  const isFinalRound=active.length<=2;
+  const canVote=!(me&&me.eliminated)||isFinalRound;
+
+  if(!canVote){
     $('vote-list').innerHTML=`<div class="card" style="text-align:center;color:var(--ink2);">You have been eliminated — watching the vote.</div>`;
   }else{
-    const myVote=votes[L.myName]||null;
+    if(isFinalRound&&me&&me.eliminated){
+      $('voting-sub').textContent='Final round — all players vote! Tap who you think is evil.';
+    }
     $('vote-list').innerHTML=active.map(p=>{
-      const isMe=p.name===L.myName;
+      const isMe=p.name===L.myName&&!me.eliminated;
       const sel=myVote===p.name;
-      return`<button class="vote-btn${isMe?' is-me':''}${sel?' selected':''}" data-t="${p.name}"><span>${p.name}${isMe?' (you)':''}</span>${sel?'<span style="font-size:12px;opacity:0.6;">your vote</span>':''}</button>`;
+      return`<button class="vote-btn${isMe?' is-me':''}${sel?' selected':''}" data-t="${p.name}"><span>${p.name}</span>${sel?'<span style="font-size:12px;opacity:0.6;">your vote</span>':''}</button>`;
     }).join('');
     $('vote-list').querySelectorAll('.vote-btn:not(.is-me)').forEach(b=>{
       b.addEventListener('click',()=>update(gref('games/'+L.room+'/votes'),{[L.myName]:b.dataset.t}));
@@ -507,15 +519,18 @@ async function onResult(g){
   const remainEvil=players.filter(p=>p.role==='evil'&&p.name!==elName&&!p.eliminated).length;
   const remainGood=players.filter(p=>p.role==='good'&&p.name!==elName&&!p.eliminated).length;
   $('game-continues').style.display='none';$('game-over-trigger').style.display='none';
+  // Always eliminate the player first
+  if(L.isHost) await update(gref('games/'+L.room+'/players/'+elName),{eliminated:true});
+
   if(isEvil&&remainEvil===0){
     // Last evil eliminated — good wins
     $('game-over-trigger').style.display='block';
-    if(L.isHost)await update(gref('games/'+L.room),{status:'gameover',['players/'+elName+'/eliminated']:true});
+    if(L.isHost) await update(gref('games/'+L.room),{status:'gameover'});
   }else{
+    // Game continues regardless of numbers — keep voting until all evil found
     $('game-continues').style.display='block';
-    $('continues-text').textContent=remainGood+' good vs '+remainEvil+' evil remaining.';
+    $('continues-text').textContent=remainGood+' good vs '+remainEvil+' evil still in the game.';
     $('continue-btn').style.display=L.isHost?'block':'none';
-    if(L.isHost)await update(gref('games/'+L.room+'/players/'+elName),{eliminated:true});
   }
   show('s-vote-result');
 }
