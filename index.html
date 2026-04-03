@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 1.9
+     SHADOW COUNCIL · Version: 2.0
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -384,7 +384,7 @@ async function startGame(){
   const ps=Object.values(g.players);
   const sh=[...ps].sort(()=>Math.random()-0.5);
   const e1=sh[0].name,e2=sh[1].name;
-  const pair=await generatePasswords();
+  const pair=generatePasswords();
   const u={};
   ps.forEach(p=>{
     u['games/'+L.room+'/players/'+p.name+'/role']=p.name===e1||p.name===e2?'evil':'good';
@@ -398,27 +398,16 @@ async function startGame(){
   await update(gref('/'),u);
 }
 
-async function generatePasswords(){
-  const fallbacks=[['north','south'],['anchor','compass'],['silver','copper'],['morning','evening'],['candle','lantern'],['bridge','tunnel'],['feather','stone'],['river','lake'],['crown','throne'],['shadow','light'],['sword','shield'],['wolf','fox']];
-  const fallback=()=>fallbacks[Math.floor(Math.random()*fallbacks.length)];
-  try{
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),5000);
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      signal:controller.signal,
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:60,messages:[{role:'user',content:'Reply ONLY with JSON, no markdown: {"word1":"salt","word2":"pepper"}. Give a pair of related everyday words people can slip into conversation.'}]})
-    });
-    clearTimeout(timer);
-    const d=await r.json();
-    const txt=d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-    const p=JSON.parse(txt);
-    if(p.word1&&p.word2)return[p.word1,p.word2];
-    return fallback();
-  }catch(e){
-    return fallback();
-  }
+function generatePasswords(){
+  const pairs=[
+    ['north','south'],['anchor','compass'],['silver','copper'],['morning','evening'],
+    ['candle','lantern'],['bridge','tunnel'],['feather','stone'],['river','lake'],
+    ['crown','throne'],['shadow','light'],['sword','shield'],['wolf','fox'],
+    ['salt','pepper'],['thunder','lightning'],['cat','dog'],['sun','moon'],
+    ['fire','ice'],['mountain','valley'],['captain','sailor'],['rose','thorn'],
+    ['castle','tower'],['mirror','shadow'],['drum','trumpet'],['key','lock']
+  ];
+  return pairs[Math.floor(Math.random()*pairs.length)];
 }
 
 function onReveal(g){
