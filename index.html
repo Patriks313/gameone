@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL
-     Version: 1.0
-     Change the number above when releasing a new version.
-     The page reads it automatically — no other edits needed.
+     SHADOW COUNCIL · Version: 1.0
+     Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
 <head>
@@ -12,14 +10,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="Shadow Council"/>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
-<meta http-equiv="Pragma" content="no-cache"/>
-<meta http-equiv="Expires" content="0"/>
 <title>Shadow Council</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--ink:#0e0d0b;--ink2:#5a5750;--ink3:#9a9690;--parchment:#f5f0e8;--parchment2:#ede7d8;--parchment3:#d8d0bc;--evil:#8B2020;--evil-light:#fdf0f0;--good:#1a4a2e;--good-light:#f0f7f2;--gold:#b8862a;--radius:14px;--radius-sm:8px;}
+:root{--ink:#0e0d0b;--ink2:#5a5750;--ink3:#9a9690;--parchment:#f5f0e8;--parchment2:#ede7d8;--parchment3:#d8d0bc;--evil:#8B2020;--gold:#b8862a;--radius:14px;--radius-sm:8px;}
 html,body{height:100%;background:var(--parchment);color:var(--ink);font-family:'DM Sans',sans-serif;}
 body{display:flex;flex-direction:column;align-items:center;min-height:100dvh;}
 .screen{display:none;flex-direction:column;align-items:center;width:100%;max-width:480px;min-height:100dvh;padding:1.5rem 1.2rem 2rem;}
@@ -37,7 +33,6 @@ input[type=text]:focus{border-color:var(--ink);background:#fff;}
 .btn{display:block;width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;transition:opacity .15s,transform .1s;text-align:center;}
 .btn:active{transform:scale(0.98);opacity:0.85;}
 .btn-primary{background:var(--ink);color:var(--parchment);}
-.btn-evil{background:var(--evil);color:#fff;}
 .btn-ghost{background:transparent;border:1px solid var(--parchment3);color:var(--ink);}
 .btn-gold{background:var(--gold);color:#fff;}
 .btn-danger{background:#c0392b;color:#fff;}
@@ -49,9 +44,8 @@ input[type=text]:focus{border-color:var(--ink);background:#fff;}
 .chip .dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;flex-shrink:0;}
 .room-code{font-family:'Cormorant Garamond',serif;font-size:4.5rem;font-weight:600;letter-spacing:0.25em;color:var(--ink);text-align:center;line-height:1;}
 .role-card{background:var(--ink);color:var(--parchment);border-radius:var(--radius);padding:1.6rem;width:100%;margin-bottom:1rem;}
-
 .role-label{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;margin-bottom:0.5rem;}
-.password-box{background:rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:0.9rem 1rem;margin-top:0.8rem;}
+.password-box{background:rgba(255,255,255,0.12);border-radius:var(--radius-sm);padding:0.9rem 1rem;margin-top:0.8rem;}
 .password-word{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;}
 .vote-btn{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--parchment3);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:var(--ink);width:100%;margin-bottom:8px;-webkit-tap-highlight-color:transparent;transition:all .15s;}
 .vote-btn.selected{background:var(--ink);color:var(--parchment);border-color:var(--ink);}
@@ -59,22 +53,18 @@ input[type=text]:focus{border-color:var(--ink);background:#fff;}
 .result-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .result-name{font-size:14px;font-weight:500;min-width:80px;color:var(--ink);}
 .result-bar-wrap{flex:1;background:var(--parchment2);border-radius:4px;height:8px;overflow:hidden;}
-.result-bar{height:8px;border-radius:4px;background:var(--evil);transition:width 0.8s ease;}
+.result-bar{height:8px;border-radius:4px;background:var(--ink);transition:width 0.8s ease;}
 .result-votes{font-size:13px;color:var(--ink2);min-width:24px;text-align:right;}
 .eliminated-card{background:var(--ink);color:var(--parchment);border-radius:var(--radius);padding:1.4rem;text-align:center;width:100%;margin-bottom:1rem;}
 .eliminated-name{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;}
-.win-banner{border-radius:var(--radius);padding:2rem 1.4rem;text-align:center;width:100%;margin-bottom:1rem;color:#fff;}
-.win-neutral{background:var(--ink);}
+.win-banner{background:var(--ink);color:var(--parchment);border-radius:var(--radius);padding:2rem 1.4rem;text-align:center;width:100%;margin-bottom:1rem;}
 .win-title{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:600;margin-bottom:0.3rem;}
 .rule-block{border-left:3px solid var(--gold);padding-left:1rem;margin-bottom:1.2rem;}
 .badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;}
-.badge-evil{background:var(--evil-light);color:var(--evil);border:1px solid rgba(139,32,32,0.2);}
-.badge-good{background:var(--good-light);color:var(--good);border:1px solid rgba(26,74,46,0.2);}
-.badge-out{background:var(--parchment2);color:var(--ink3);border:1px solid var(--parchment3);}
 .section-header{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;margin-top:0.8rem;}
 .status-bar{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px;background:var(--parchment);border:1px solid var(--parchment3);border-radius:var(--radius-sm);margin-bottom:10px;font-size:13px;}
 .status-dot{width:8px;height:8px;border-radius:50%;margin-right:6px;display:inline-block;}
-.dot-open{background:#1D9E75;}.dot-closed{background:var(--evil);}
+.dot-open{background:#1D9E75;}
 .blurred{filter:blur(10px);transition:filter 0.5s;}.blurred.revealed{filter:none;}
 hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 .spacer{flex:1;}
@@ -85,7 +75,6 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </style>
 </head>
 <body>
-
 <!-- LANDING -->
 <div class="screen active" id="s-landing">
   <div class="spacer"></div>
@@ -115,16 +104,16 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div id="form-rules" style="width:100%;display:none">
     <div class="card">
       <h3 style="margin-bottom:1rem;">How to play</h3>
-      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The setup</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">The host creates a room and shares a 4-digit code. Everyone joins on their own phone. When the host starts, two players are secretly chosen as Evil.</div></div>
-      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The evil pair</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Evil players receive a secret password — one word each from a pair. They know both words and who carries which, and must find each other through conversation without being caught.</div></div>
-      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The good players</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Good players only know they are not evil. Listen carefully — the evil pair will try to slip their passwords into natural conversation to signal each other.</div></div>
-      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Voting</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">When the host opens voting, everyone taps who they suspect on their own phone. The host closes voting and everyone sees the result simultaneously.</div></div>
-      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Winning</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;"><strong>Good wins</strong> when both evil players are eliminated. <strong>Evil wins</strong> when evil players equal or outnumber the good players remaining.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The setup</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">The host creates a room and shares a 4-digit code. Everyone joins on their own phone. Two players are secretly chosen as Evil.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The evil pair</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Evil players each receive a secret word from a related pair. They must find each other through conversation without being caught.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The good players</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Good players only know they are not evil. Listen for the hidden words slipping into conversation.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Voting</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">The host opens voting. Everyone taps their suspect. Voting closes automatically when all have voted, or the host can force-close it.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Winning</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Good wins when both evil players are eliminated. Keep voting until they are found.</div></div>
     </div>
   </div>
   <div class="spacer"></div>
-  <p style="font-size:11px;color:var(--ink3);padding-bottom:1rem;text-align:center;">Shadow Council · real-time multiplayer</p>
-  <p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;" id="version-tag"></p>
+  <p style="font-size:11px;color:var(--ink3);text-align:center;padding-bottom:1.5rem;">Shadow Council · real-time multiplayer</p>
+  <p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;" id="ver"></p>
 </div>
 
 <!-- HOST LOBBY -->
@@ -153,7 +142,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div class="spacer"></div>
   <div class="ornament">✦</div>
   <h2 style="margin-bottom:0.5rem;">You're in the council</h2>
-  <p class="sub">The host will start shortly.<br/>Keep your phone close.</p>
+  <p class="sub">The host will start shortly. Keep your phone close.</p>
   <div class="card" style="text-align:center;">
     <div class="eyebrow">Joined as</div>
     <div style="font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;" id="player-joined-name">—</div>
@@ -169,7 +158,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 <div class="screen" id="s-role-reveal">
   <div class="eyebrow" style="margin-top:0.5rem;">Your role</div>
   <h2 style="margin-bottom:0.3rem;">Role assigned</h2>
-  <p class="sub">This is private — only you can see this.<br/>Tap to reveal.</p>
+  <p class="sub">This is private — only you can see this. Tap to reveal.</p>
   <div id="reveal-content" class="blurred" style="width:100%;"></div>
   <button class="btn btn-ghost" id="reveal-btn" style="margin-top:0.5rem;">Tap to reveal my role</button>
   <button class="btn btn-primary" id="reveal-done-btn" style="display:none;margin-top:0.5rem;">I've read it — continue</button>
@@ -180,13 +169,11 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 <div class="screen" id="s-discussion">
   <div class="eyebrow" style="margin-top:0.5rem;">Round <span id="disc-round">1</span></div>
   <h2 style="margin-bottom:0.3rem;">Discussion</h2>
-  <p class="sub">Talk amongst yourselves.<br/>The host will open voting when ready.</p>
+  <p class="sub">Talk amongst yourselves. The host will open voting when ready.</p>
   <div id="host-controls" style="width:100%;display:none;">
     <div class="card">
       <div class="section-header" style="margin-top:0;">Host controls</div>
-      <div class="status-bar"><span><span class="status-dot dot-closed" id="vote-dot"></span><span id="vote-status-text">Voting closed</span></span><span id="votes-cast-count" style="color:var(--ink2);">0 votes cast</span></div>
       <button class="btn btn-primary" id="open-vote-btn">Open voting</button>
-      <button class="btn btn-evil" id="close-vote-btn" style="display:none;margin-top:8px;">Close voting &amp; show result</button>
       <button class="btn btn-danger" id="end-game-btn" style="margin-top:8px;">End game</button>
     </div>
   </div>
@@ -202,7 +189,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 <div class="screen" id="s-voting">
   <div class="eyebrow" style="margin-top:0.5rem;">Voting is open</div>
   <h2 style="margin-bottom:0.3rem;">Who is evil?</h2>
-  <p class="sub" id="voting-sub">Tap your suspect. You can change your vote until the host closes it.</p>
+  <p class="sub" id="voting-sub">Tap your suspect.</p>
   <div id="host-voting-controls" style="width:100%;display:none;">
     <div class="card">
       <div class="section-header" style="margin-top:0;">Host controls</div>
@@ -210,8 +197,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
         <span><span class="status-dot dot-open"></span>Voting open</span>
         <span id="voting-votes-count" style="color:var(--ink2);">0 votes cast</span>
       </div>
-      <p style="font-size:13px;color:var(--ink2);margin-bottom:10px;">Voting closes automatically when everyone has voted.</p>
-      <button class="btn btn-ghost" id="close-vote-btn2" style="font-size:13px;">Force close voting now</button>
+      <button class="btn btn-ghost" id="force-close-btn" style="font-size:13px;">Force close voting now</button>
     </div>
   </div>
   <div id="vote-list" style="width:100%;"></div>
@@ -224,9 +210,9 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <h2 style="margin-bottom:1rem;" id="result-round-label">Round 1</h2>
   <div style="width:100%;margin-bottom:1rem;" id="result-bars"></div>
   <div class="eliminated-card" id="eliminated-card">
-    <div style="font-size:11px;opacity:0.7;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em;">Eliminated</div>
+    <div style="font-size:11px;opacity:0.6;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em;">Eliminated</div>
     <div class="eliminated-name" id="eliminated-name">—</div>
-    <div id="eliminated-role-reveal" style="margin-top:0.5rem;font-size:14px;opacity:0.85;"></div>
+    <div id="eliminated-role-reveal" style="margin-top:0.5rem;font-size:14px;opacity:0.8;"></div>
   </div>
   <div id="game-continues" style="width:100%;display:none;">
     <div class="card" style="text-align:center;"><p style="font-size:14px;color:var(--ink2);" id="continues-text">Game continues.</p></div>
@@ -241,10 +227,10 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 <!-- WIN SCREEN -->
 <div class="screen" id="s-win">
   <div class="spacer"></div>
-  <div id="win-banner" class="win-banner">
-    <div class="ornament" style="color:rgba(255,255,255,0.5);">✦ ✦ ✦</div>
+  <div class="win-banner">
+    <div class="ornament" style="color:rgba(255,255,255,0.4);">✦ ✦ ✦</div>
     <div class="win-title" id="win-title">Good wins!</div>
-    <p id="win-subtitle" style="opacity:0.85;font-size:15px;margin-top:0.4rem;"></p>
+    <p id="win-subtitle" style="opacity:0.8;font-size:15px;margin-top:0.4rem;"></p>
   </div>
   <div style="width:100%;">
     <div class="section-header">The evil pair</div>
@@ -269,8 +255,8 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <script type="module">
-import { initializeApp } from "https://cdn.jsdelivr.net/npm/firebase@10.12.0/app/+esm";
-import { getDatabase, ref, set, get, update, onValue } from "https://cdn.jsdelivr.net/npm/firebase@10.12.0/database/+esm";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAYghIMXjI2wmREEgyiVubCC83WhF3_I40",
@@ -282,33 +268,21 @@ const firebaseConfig = {
   appId: "1:866704299734:web:a32aaca76d0a068e315b77"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
+const fbapp = initializeApp(firebaseConfig);
+const db = getDatabase(fbapp);
 const L = { isHost:false, myName:'', room:'' };
-let gameListener = null;
+let unsubscribe = null;
 
-// ── UTILS ──────────────────────────────────
 const $ = id => document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
 function genCode(){ return String(Math.floor(1000+Math.random()*9000)); }
-function gref(path){ return ref(db, path); }
+function gref(path){ return ref(db,path); }
 
-// ── BOOT CHECK ─────────────────────────────────────
-document.getElementById('boot-test').style.display = 'block';
-setTimeout(()=>{ document.getElementById('boot-test').style.display='none'; }, 3000);
+// Version from top comment
+const vm = document.documentElement.outerHTML.match(/Version:\s*([\d.]+)/);
+if(vm) $('ver').textContent = 'v'+vm[1];
 
-// ── GLOBAL ERROR CATCHER ───────────────────────────
-window.onerror = (msg, src, line) => {
-  const b = document.getElementById('err-banner');
-  if(b){ b.textContent = 'Error line '+line+': '+msg; b.style.display='block'; }
-};
-window.addEventListener('unhandledrejection', e => {
-  const b = document.getElementById('err-banner');
-  if(b){ b.textContent = 'Promise error: '+(e.reason?.message||e.reason); b.style.display='block'; }
-});
-
-// ── WIRE UP ALL BUTTONS HERE (no onclick in HTML) ──────────────────────────
+// Wire all buttons
 $('tab-host').addEventListener('click', ()=>setMode('host'));
 $('tab-join').addEventListener('click', ()=>setMode('join'));
 $('tab-rules').addEventListener('click', ()=>setMode('rules'));
@@ -319,318 +293,262 @@ $('cancel-lobby-btn').addEventListener('click', cancelGame);
 $('reveal-btn').addEventListener('click', revealRole);
 $('reveal-done-btn').addEventListener('click', goToDiscussion);
 $('open-vote-btn').addEventListener('click', openVoting);
-$('close-vote-btn').addEventListener('click', closeVoting);
-$('close-vote-btn2').addEventListener('click', closeVoting);
+$('force-close-btn').addEventListener('click', closeVoting);
 $('end-game-btn').addEventListener('click', cancelGame);
-$('continue-btn').addEventListener('click', continueToDiscussion);
+$('continue-btn').addEventListener('click', continueRound);
 $('see-result-btn').addEventListener('click', ()=>show('s-win'));
-$('play-again-btn').addEventListener('click', resetGame);
-$('back-to-start-btn').addEventListener('click', resetGame);
+$('play-again-btn').addEventListener('click', ()=>location.reload());
+$('back-to-start-btn').addEventListener('click', ()=>location.reload());
 
-// Set version display from top comment
-const vm = document.documentElement.outerHTML.match(/Version:\s*([\d.]+)/);
-if(vm) $('version-tag').textContent = 'v' + vm[1];
-
-// ── TABS ───────────────────────────────────
 function setMode(m){
   ['host','join','rules'].forEach(t=>{
-    $('tab-'+t).classList.toggle('active', t===m);
-    $('form-'+t).style.display = t===m ? 'block' : 'none';
+    $('tab-'+t).classList.toggle('active',t===m);
+    $('form-'+t).style.display=t===m?'block':'none';
   });
 }
 
-// ── HOST GAME ──────────────────────────────
 async function hostGame(){
-  const name = $('host-name').value.trim();
-  if(!name){ $('host-err').textContent='Please enter your name'; return; }
+  const name=$('host-name').value.trim();
+  if(!name){$('host-err').textContent='Please enter your name';return;}
   $('host-err').textContent='';
-  $('host-btn').textContent='Creating…'; $('host-btn').disabled=true;
-  L.isHost=true; L.myName=name; L.room=genCode();
-  try {
-    $('host-err').textContent='Connecting to Firebase…';
-    await set(gref('games/'+L.room), {
-      status:'lobby', host:name, round:1,
-      players:{ [name]:{name,role:'',eliminated:false,word:'',ready:false} },
-      votes:{}, votingOpen:false, words:['',''], createdAt:Date.now()
+  $('host-btn').textContent='Creating…';$('host-btn').disabled=true;
+  L.isHost=true;L.myName=name;L.room=genCode();
+  try{
+    await set(gref('games/'+L.room),{
+      status:'lobby',host:name,round:1,
+      players:{[name]:{name,role:'',eliminated:false,word:'',ready:false}},
+      votes:{},votingOpen:false,words:['',''],createdAt:Date.now()
     });
-    $('host-err').textContent='';
     $('display-code').textContent=L.room;
     listenToGame();
     show('s-host-lobby');
-  } catch(e) {
-    $('host-err').textContent='Firebase error: '+e.message;
-    $('host-btn').textContent='Create game room'; $('host-btn').disabled=false;
+  }catch(e){
+    $('host-err').textContent='Error: '+e.message;
+    $('host-btn').textContent='Create game room';$('host-btn').disabled=false;
   }
 }
 
-// ── JOIN GAME ──────────────────────────────
 async function joinGame(){
-  const code=$('join-code').value.trim(), name=$('join-name').value.trim();
-  if(!/^\d{4}$/.test(code)){ $('join-err').textContent='Enter the 4-digit room code'; return; }
-  if(!name){ $('join-err').textContent='Please enter your name'; return; }
+  const code=$('join-code').value.trim(),name=$('join-name').value.trim();
+  if(!/^\d{4}$/.test(code)){$('join-err').textContent='Enter the 4-digit room code';return;}
+  if(!name){$('join-err').textContent='Please enter your name';return;}
   $('join-err').textContent='';
-  $('join-btn').textContent='Joining…'; $('join-btn').disabled=true;
-  const snap = await get(gref('games/'+code));
-  if(!snap.exists()){ $('join-err').textContent='Room not found. Check the code.'; $('join-btn').textContent='Join the council'; $('join-btn').disabled=false; return; }
-  const g = snap.val();
-  if(g.status!=='lobby'){ $('join-err').textContent='This game has already started.'; $('join-btn').textContent='Join the council'; $('join-btn').disabled=false; return; }
-  if(g.players&&g.players[name]){ $('join-err').textContent='That name is already taken in this room.'; $('join-btn').textContent='Join the council'; $('join-btn').disabled=false; return; }
-  L.isHost=false; L.myName=name; L.room=code;
-  await update(gref('games/'+code+'/players'), { [name]:{name,role:'',eliminated:false,word:'',ready:false} });
-  $('player-joined-name').textContent=name;
-  $('player-room-display').textContent=code;
-  listenToGame();
-  show('s-player-wait');
+  $('join-btn').textContent='Joining…';$('join-btn').disabled=true;
+  try{
+    const snap=await get(gref('games/'+code));
+    if(!snap.exists()){$('join-err').textContent='Room not found.';$('join-btn').textContent='Join the council';$('join-btn').disabled=false;return;}
+    const g=snap.val();
+    if(g.status!=='lobby'){$('join-err').textContent='Game already started.';$('join-btn').textContent='Join the council';$('join-btn').disabled=false;return;}
+    if(g.players&&g.players[name]){$('join-err').textContent='Name already taken.';$('join-btn').textContent='Join the council';$('join-btn').disabled=false;return;}
+    L.isHost=false;L.myName=name;L.room=code;
+    await update(gref('games/'+code+'/players'),{[name]:{name,role:'',eliminated:false,word:'',ready:false}});
+    $('player-joined-name').textContent=name;
+    $('player-room-display').textContent=code;
+    listenToGame();
+    show('s-player-wait');
+  }catch(e){
+    $('join-err').textContent='Error: '+e.message;
+    $('join-btn').textContent='Join the council';$('join-btn').disabled=false;
+  }
 }
 
-// ── FIREBASE LISTENER ──────────────────────
 function listenToGame(){
-  if(gameListener){ gameListener(); gameListener=null; }
-  gameListener = onValue(gref('games/'+L.room), snap=>{
-    if(!snap.exists()){ handleCancelled(); return; }
-    const g = snap.val();
-    if(g.status==='cancelled'){ handleCancelled(); return; }
-    if(g.status==='lobby') handleLobby(g);
-    else if(g.status==='reveal') handleReveal(g);
-    else if(g.status==='discussion') handleDiscussion(g);
-    else if(g.status==='voting') handleVoting(g);
-    else if(g.status==='result') handleResult(g);
-    else if(g.status==='gameover') handleGameOver(g);
+  if(unsubscribe)unsubscribe();
+  unsubscribe=onValue(gref('games/'+L.room),snap=>{
+    if(!snap.exists()){goCancelled();return;}
+    const g=snap.val();
+    if(g.status==='cancelled'){goCancelled();return;}
+    if(g.status==='lobby')onLobby(g);
+    else if(g.status==='reveal')onReveal(g);
+    else if(g.status==='discussion')onDiscussion(g);
+    else if(g.status==='voting')onVoting(g);
+    else if(g.status==='result')onResult(g);
+    else if(g.status==='gameover')onGameOver(g);
   });
 }
 
-// ── LOBBY ──────────────────────────────────
-function handleLobby(g){
-  const players = Object.values(g.players||{});
-  $('lobby-chips').innerHTML = players.map(p=>`<span class="chip"><span class="dot"></span>${p.name}${p.name===g.host?' (host)':''}</span>`).join('');
-  $('player-hint').textContent = players.length+' player'+(players.length!==1?'s':'')+' in room';
-  const ok = players.length>=4;
-  $('start-btn').style.opacity = ok?'1':'0.4';
-  $('start-btn').style.pointerEvents = ok?'auto':'none';
+function onLobby(g){
+  const ps=Object.values(g.players||{});
+  $('lobby-chips').innerHTML=ps.map(p=>`<span class="chip"><span class="dot"></span>${p.name}${p.name===g.host?' (host)':''}</span>`).join('');
+  $('player-hint').textContent=ps.length+' player'+(ps.length!==1?'s':'')+' in room';
+  const ok=ps.length>=4;
+  $('start-btn').style.opacity=ok?'1':'0.4';
+  $('start-btn').style.pointerEvents=ok?'auto':'none';
 }
 
-// ── START ──────────────────────────────────
 async function startGame(){
-  $('start-btn').textContent='Generating…'; $('start-btn').disabled=true;
-  const snap = await get(gref('games/'+L.room));
-  const g = snap.val();
-  const players = Object.values(g.players);
-  const shuffled = [...players].sort(()=>Math.random()-0.5);
-  const evil1=shuffled[0].name, evil2=shuffled[1].name;
-  const pair = await generatePasswords();
-  const updates = {};
-  players.forEach(p=>{
-    const isEvil = p.name===evil1||p.name===evil2;
-    updates['games/'+L.room+'/players/'+p.name+'/role'] = isEvil?'evil':'good';
-    updates['games/'+L.room+'/players/'+p.name+'/word'] = p.name===evil1?pair[0]:p.name===evil2?pair[1]:'';
+  $('start-btn').textContent='Generating…';$('start-btn').disabled=true;
+  const snap=await get(gref('games/'+L.room));
+  const g=snap.val();
+  const ps=Object.values(g.players);
+  const sh=[...ps].sort(()=>Math.random()-0.5);
+  const e1=sh[0].name,e2=sh[1].name;
+  const pair=await generatePasswords();
+  const u={};
+  ps.forEach(p=>{
+    u['games/'+L.room+'/players/'+p.name+'/role']=p.name===e1||p.name===e2?'evil':'good';
+    u['games/'+L.room+'/players/'+p.name+'/word']=p.name===e1?pair[0]:p.name===e2?pair[1]:'';
   });
-  updates['games/'+L.room+'/words'] = pair;
-  updates['games/'+L.room+'/status'] = 'reveal';
-  updates['games/'+L.room+'/round'] = 1;
-  updates['games/'+L.room+'/votes'] = {};
-  updates['games/'+L.room+'/votingOpen'] = false;
-  await update(gref('/'), updates);
+  u['games/'+L.room+'/words']=pair;
+  u['games/'+L.room+'/status']='reveal';
+  u['games/'+L.room+'/round']=1;
+  u['games/'+L.room+'/votes']={};
+  u['games/'+L.room+'/votingOpen']=false;
+  await update(gref('/'),u);
 }
 
-// ── PASSWORDS ──────────────────────────────
 async function generatePasswords(){
   try{
-    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:100,messages:[{role:'user',content:'Generate a pair of related everyday words for a social deduction game where players must slip the words into normal conversation. Reply ONLY with JSON: {"word1":"salt","word2":"pepper"} — no markdown, no explanation.'}]})});
-    const d = await r.json();
-    const txt = d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-    const p = JSON.parse(txt);
-    return [p.word1, p.word2];
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:80,messages:[{role:'user',content:'Give a pair of related everyday words for a social deduction game where players slip them into conversation. Reply ONLY with JSON: {"word1":"salt","word2":"pepper"}'}]})});
+    const d=await r.json();
+    const p=JSON.parse(d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
+    return[p.word1,p.word2];
   }catch(e){
-    const fb=[['north','south'],['mountain','valley'],['anchor','compass'],['silver','copper'],['morning','evening'],['candle','lantern'],['bridge','tunnel'],['feather','stone']];
+    const fb=[['north','south'],['anchor','compass'],['silver','copper'],['morning','evening'],['candle','lantern'],['bridge','tunnel'],['feather','stone'],['river','lake']];
     return fb[Math.floor(Math.random()*fb.length)];
   }
 }
 
-// ── ROLE REVEAL ────────────────────────────
-function handleReveal(g){
-  if($('s-role-reveal').classList.contains('active')) return;
-  const me = g.players[L.myName];
-  if(!me) return;
-  const rc = $('reveal-content');
-  rc.classList.add('blurred'); rc.classList.remove('revealed');
-  $('reveal-btn').style.display='block';
-  $('reveal-done-btn').style.display='none';
+function onReveal(g){
+  if($('s-role-reveal').classList.contains('active'))return;
+  const me=g.players[L.myName];if(!me)return;
+  const rc=$('reveal-content');
+  rc.classList.add('blurred');rc.classList.remove('revealed');
+  $('reveal-btn').style.display='block';$('reveal-done-btn').style.display='none';
   if(me.role==='evil'){
-    rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Work your secret word naturally into conversation. Another player is also evil — find them without revealing yourself.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Your secret word</div><div class="password-word">${me.word}</div><div style="font-size:13px;margin-top:6px;opacity:0.75;">The other evil player has a related word. Listen carefully.</div></div></div>`;
-  } else {
-    rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Good</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Two players are hiding secret words in conversation. Listen carefully and find them before it's too late.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;">No secret word.</div><div style="font-size:14px;margin-top:4px;opacity:0.75;">Trust your instincts.</div></div></div>`;
+    rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Work your secret word naturally into conversation. Another player is also evil — find them without revealing yourself.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Your secret word</div><div class="password-word">${me.word}</div><div style="font-size:13px;margin-top:8px;opacity:0.7;">The other evil player has a related word. Listen carefully.</div></div></div>`;
+  }else{
+    rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Good</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Two players are hiding secret words in conversation. Listen carefully and find them before it's too late.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;">No secret word.</div><div style="font-size:14px;margin-top:6px;opacity:0.75;">Trust your instincts.</div></div></div>`;
   }
   show('s-role-reveal');
 }
 
-function revealRole(){ $('reveal-content').classList.add('revealed'); $('reveal-btn').style.display='none'; $('reveal-done-btn').style.display='block'; }
+function revealRole(){$('reveal-content').classList.add('revealed');$('reveal-btn').style.display='none';$('reveal-done-btn').style.display='block';}
 
 async function goToDiscussion(){
-  await update(gref('games/'+L.room+'/players/'+L.myName), {ready:true});
-  await update(gref('games/'+L.room), {status:'discussion'});
+  await update(gref('games/'+L.room+'/players/'+L.myName),{ready:true});
+  await update(gref('games/'+L.room),{status:'discussion'});
 }
 
-// ── DISCUSSION ─────────────────────────────
-function handleDiscussion(g){
-  $('disc-round').textContent = g.round||1;
-  const active = Object.values(g.players||{}).filter(p=>!p.eliminated);
-  $('disc-chips').innerHTML = active.map(p=>`<span class="chip"><span class="dot"></span>${p.name}</span>`).join('');
-  $('host-controls').style.display = L.isHost?'block':'none';
-  if(L.isHost){
-    $('open-vote-btn').style.display='block'; $('close-vote-btn').style.display='none';
-    $('vote-dot').className='status-dot dot-closed'; $('vote-status-text').textContent='Voting closed';
-    $('votes-cast-count').textContent=Object.keys(g.votes||{}).length+' votes cast';
-  }
-  const me = g.players[L.myName];
+function onDiscussion(g){
+  $('disc-round').textContent=g.round||1;
+  const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
+  $('disc-chips').innerHTML=active.map(p=>`<span class="chip"><span class="dot"></span>${p.name}</span>`).join('');
+  $('host-controls').style.display=L.isHost?'block':'none';
+  const me=g.players[L.myName];
   if(me&&me.role==='evil'){
-    $('reminder-content').innerHTML=`<div style="background:var(--parchment2);border:1px solid var(--parchment3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:0.5rem;"><div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Your secret word</div><div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--ink);">${me.word}</div></div>`;
+    $('reminder-content').innerHTML=`<div style="background:var(--parchment2);border:1px solid var(--parchment3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:0.5rem;"><div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Your secret word</div><div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:600;color:var(--ink);">${me.word}</div></div>`;
     $('role-reminder').style.display='block';
-  } else if(me){
+  }else if(me){
     $('reminder-content').innerHTML=`<div style="background:var(--parchment2);border:1px solid var(--parchment3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:0.5rem;"><div style="font-size:13px;color:var(--ink2);">Listen carefully for the hidden words.</div></div>`;
     $('role-reminder').style.display='block';
   }
-  if(!$('s-discussion').classList.contains('active')) show('s-discussion');
+  if(!$('s-discussion').classList.contains('active'))show('s-discussion');
 }
 
 async function openVoting(){
-  $('open-vote-btn').style.display='none'; $('close-vote-btn').style.display='block';
-  $('vote-dot').className='status-dot dot-open'; $('vote-status-text').textContent='Voting open';
-  await update(gref('games/'+L.room), {status:'voting', votingOpen:true, votes:{}});
+  await update(gref('games/'+L.room),{status:'voting',votingOpen:true,votes:{}});
 }
 
 async function closeVoting(){
-  await update(gref('games/'+L.room), {votingOpen:false, status:'result'});
+  await update(gref('games/'+L.room),{votingOpen:false,status:'result'});
 }
 
-// ── VOTING ─────────────────────────────────
-function handleVoting(g){
-  const me = g.players[L.myName];
-  const isElim = me&&me.eliminated;
-  const active = Object.values(g.players||{}).filter(p=>!p.eliminated);
-  const myVote = (g.votes||{})[L.myName]||null;
-  const voteCount = Object.keys(g.votes||{}).length;
-  const eligibleCount = active.filter(p=>!p.eliminated).length;
+function onVoting(g){
+  const me=g.players[L.myName];
+  const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
+  const votes=g.votes||{};
+  const voteCount=Object.keys(votes).length;
+  const eligibleCount=active.length;
 
-  // Auto-close when all eligible players have voted (host only triggers it)
-  if(L.isHost && voteCount >= eligibleCount && eligibleCount > 0){
-    closeVoting();
-    return;
-  }
+  // Auto-close when all voted — host triggers it
+  if(L.isHost&&voteCount>=eligibleCount&&eligibleCount>0){closeVoting();return;}
 
-  // Host controls — always visible to host on voting screen
   if(L.isHost){
-    $('host-voting-controls').style.display = 'block';
-    $('voting-votes-count').textContent = voteCount + ' / ' + eligibleCount + ' voted';
-    $('voting-votes-count').style.color = 'var(--ink2)';
-  } else {
-    $('host-voting-controls').style.display = 'none';
-    // Show players how many have voted
-    $('voting-sub').textContent = voteCount + ' of ' + eligibleCount + ' have voted.';
+    $('host-voting-controls').style.display='block';
+    const allVoted=voteCount>=eligibleCount;
+    $('voting-votes-count').textContent=voteCount+' / '+eligibleCount+' voted'+(allVoted?' — closing…':'');
+  }else{
+    $('host-voting-controls').style.display='none';
+    $('voting-sub').textContent=voteCount+' of '+eligibleCount+' voted';
   }
 
-  if(isElim){
-    $('voting-sub').textContent='You have been eliminated — you may watch but not vote.';
-    $('vote-list').innerHTML=`<div class="card" style="text-align:center;color:var(--ink2);">Watching the vote…</div>`;
-  } else if(L.isHost) {
-    $('voting-sub').textContent='You can vote too — tap your suspect below.';
-    $('vote-list').innerHTML = active.map(p=>{
-      const isMe = p.name===L.myName;
-      const sel = myVote===p.name;
-      return `<button class="vote-btn${isMe?' is-me':''}${sel?' selected':''}" data-target="${p.name}"><span>${p.name}${isMe?' (you)':''}</span>${sel?'<span style="font-size:12px;opacity:0.6;">your vote</span>':''}</button>`;
+  if(me&&me.eliminated){
+    $('vote-list').innerHTML=`<div class="card" style="text-align:center;color:var(--ink2);">You have been eliminated — watching the vote.</div>`;
+  }else{
+    const myVote=votes[L.myName]||null;
+    $('vote-list').innerHTML=active.map(p=>{
+      const isMe=p.name===L.myName;
+      const sel=myVote===p.name;
+      return`<button class="vote-btn${isMe?' is-me':''}${sel?' selected':''}" data-t="${p.name}"><span>${p.name}${isMe?' (you)':''}</span>${sel?'<span style="font-size:12px;opacity:0.6;">your vote</span>':''}</button>`;
     }).join('');
-    $('vote-list').querySelectorAll('.vote-btn:not(.is-me)').forEach(btn=>{
-      btn.addEventListener('click', ()=>castVote(btn.dataset.target));
-    });
-  } else {
-    $('voting-sub').textContent = 'Tap your suspect · ' + voteCount + ' of ' + eligibleCount + ' voted';
-    $('vote-list').innerHTML = active.map(p=>{
-      const isMe = p.name===L.myName;
-      const sel = myVote===p.name;
-      return `<button class="vote-btn${isMe?' is-me':''}${sel?' selected':''}" data-target="${p.name}"><span>${p.name}${isMe?' (you)':''}</span>${sel?'<span style="font-size:12px;opacity:0.6;">your vote</span>':''}</button>`;
-    }).join('');
-    $('vote-list').querySelectorAll('.vote-btn:not(.is-me)').forEach(btn=>{
-      btn.addEventListener('click', ()=>castVote(btn.dataset.target));
+    $('vote-list').querySelectorAll('.vote-btn:not(.is-me)').forEach(b=>{
+      b.addEventListener('click',()=>update(gref('games/'+L.room+'/votes'),{[L.myName]:b.dataset.t}));
     });
   }
-  if(!$('s-voting').classList.contains('active')) show('s-voting');
+  if(!$('s-voting').classList.contains('active'))show('s-voting');
 }
 
-async function castVote(target){
-  await update(gref('games/'+L.room+'/votes'), {[L.myName]:target});
-}
-
-// ── RESULT ─────────────────────────────────
-async function handleResult(g){
-  const players = Object.values(g.players||{});
-  const tally = {};
+async function onResult(g){
+  if($('s-vote-result').classList.contains('active'))return;
+  const players=Object.values(g.players||{});
+  const tally={};
   players.filter(p=>!p.eliminated).forEach(p=>{tally[p.name]=0;});
   Object.values(g.votes||{}).forEach(v=>{if(tally[v]!==undefined)tally[v]++;});
-  const sorted = Object.entries(tally).sort((a,b)=>b[1]-a[1]);
-  const maxV = sorted[0]?sorted[0][1]:0;
+  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  const maxV=sorted[0]?sorted[0][1]:0;
   $('result-round-label').textContent='Round '+(g.round||1)+' result';
-  $('result-bars').innerHTML = sorted.map(([name,count])=>`<div class="result-row"><span class="result-name">${name}</span><div class="result-bar-wrap"><div class="result-bar" style="width:${maxV>0?(count/maxV*100):0}%"></div></div><span class="result-votes">${count}</span></div>`).join('');
-  const elName = sorted[0]?sorted[0][0]:null;
-  const elPlayer = players.find(p=>p.name===elName);
-  $('eliminated-name').textContent = elName||'Nobody';
-  const isEvil = elPlayer&&elPlayer.role==='evil';
-  $('eliminated-role-reveal').textContent = elPlayer?(isEvil?'Was evil — their word was "'+elPlayer.word+'"':'Was good — an innocent lost'):'';
-
-  const activeEvil = players.filter(p=>p.role==='evil'&&p.name!==elName&&!p.eliminated).length;
-  const activeGood = players.filter(p=>p.role==='good'&&p.name!==elName&&!p.eliminated).length;
-  const totalRemaining = activeEvil + activeGood;
-  $('game-continues').style.display='none'; $('game-over-trigger').style.display='none';
-  // Game ends only when the last evil player is voted out
-  const gameOver = isEvil && activeEvil === 0;
-  if(gameOver){
+  $('result-bars').innerHTML=sorted.map(([name,count])=>`<div class="result-row"><span class="result-name">${name}</span><div class="result-bar-wrap"><div class="result-bar" style="width:${maxV>0?(count/maxV*100):0}%"></div></div><span class="result-votes">${count}</span></div>`).join('');
+  const elName=sorted[0]?sorted[0][0]:null;
+  const elPlayer=players.find(p=>p.name===elName);
+  $('eliminated-name').textContent=elName||'Nobody';
+  const isEvil=elPlayer&&elPlayer.role==='evil';
+  $('eliminated-role-reveal').textContent=elPlayer?(isEvil?'Was evil — their word was "'+elPlayer.word+'"':'Was good — an innocent lost'):'';
+  const remainEvil=players.filter(p=>p.role==='evil'&&p.name!==elName&&!p.eliminated).length;
+  const remainGood=players.filter(p=>p.role==='good'&&p.name!==elName&&!p.eliminated).length;
+  $('game-continues').style.display='none';$('game-over-trigger').style.display='none';
+  if(isEvil&&remainEvil===0){
+    // Last evil eliminated — good wins
     $('game-over-trigger').style.display='block';
-    if(L.isHost) await update(gref('games/'+L.room), {status:'gameover', ['players/'+elName+'/eliminated']:true});
-  } else {
+    if(L.isHost)await update(gref('games/'+L.room),{status:'gameover',['players/'+elName+'/eliminated']:true});
+  }else{
     $('game-continues').style.display='block';
-    $('continues-text').textContent=activeGood+' good vs '+activeEvil+' evil remaining. '+totalRemaining+' players left.';
+    $('continues-text').textContent=remainGood+' good vs '+remainEvil+' evil remaining.';
     $('continue-btn').style.display=L.isHost?'block':'none';
-    if(L.isHost) await update(gref('games/'+L.room+'/players/'+elName), {eliminated:true});
+    if(L.isHost)await update(gref('games/'+L.room+'/players/'+elName),{eliminated:true});
   }
-  if(!$('s-vote-result').classList.contains('active')) show('s-vote-result');
+  show('s-vote-result');
 }
 
-async function continueToDiscussion(){
-  const snap = await get(gref('games/'+L.room));
-  const g = snap.val();
-  await update(gref('games/'+L.room), {status:'discussion', votingOpen:false, votes:{}, round:(g.round||1)+1});
+async function continueRound(){
+  const snap=await get(gref('games/'+L.room));
+  const g=snap.val();
+  await update(gref('games/'+L.room),{status:'discussion',votingOpen:false,votes:{},round:(g.round||1)+1});
 }
 
-// ── GAME OVER ──────────────────────────────
-function handleGameOver(g){
-  const players = Object.values(g.players||{});
-  const evils = players.filter(p=>p.role==='evil');
-  const allEvilElim = evils.every(p=>p.eliminated);
-  $('win-banner').className = 'win-banner win-neutral';
-  $('win-title').textContent = allEvilElim ? 'Good wins!' : 'Evil wins!';
-  $('win-subtitle').textContent = allEvilElim ? 'Both evil players have been unmasked.' : 'The evil pair survived.';
-  $('evil-reveal-chips').innerHTML = evils.map(p=>`<span class="chip">${p.name}</span>`).join('');
-  $('win-passwords').textContent = '"'+(g.words[0]||'?')+'" & "'+(g.words[1]||'?')+'"';
-  $('win-player-list').innerHTML = players.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--parchment3);"><span style="font-weight:500;">${p.name}</span><span><span class="badge ${p.role==='evil'?'badge-evil':'badge-good'}">${p.role}</span>${p.eliminated?' <span class="badge badge-out">out</span>':''}</span></div>`).join('');
-  if(!$('s-win').classList.contains('active')) show('s-win');
+function onGameOver(g){
+  const players=Object.values(g.players||{});
+  const evils=players.filter(p=>p.role==='evil');
+  const allOut=evils.every(p=>p.eliminated);
+  $('win-title').textContent=allOut?'Good wins!':'Evil wins!';
+  $('win-subtitle').textContent=allOut?'Both evil players were unmasked.':'The evil pair survived.';
+  $('evil-reveal-chips').innerHTML=evils.map(p=>`<span class="chip">${p.name}</span>`).join('');
+  $('win-passwords').textContent='"'+(g.words[0]||'?')+'" & "'+(g.words[1]||'?')+'"';
+  $('win-player-list').innerHTML=players.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--parchment3);"><span style="font-weight:500;">${p.name}</span><span class="badge" style="background:var(--parchment2);border:1px solid var(--parchment3);">${p.role}${p.eliminated?' · out':''}</span></div>`).join('');
+  if(!$('s-win').classList.contains('active'))show('s-win');
 }
 
-// ── CANCEL / RESET ─────────────────────────
 async function cancelGame(){
-  if(!confirm('End the game for everyone?')) return;
-  if(gameListener){ gameListener(); gameListener=null; }
-  await update(gref('games/'+L.room), {status:'cancelled'});
+  if(!confirm('End the game for everyone?'))return;
+  if(unsubscribe){unsubscribe();unsubscribe=null;}
+  await update(gref('games/'+L.room),{status:'cancelled'});
   show('s-cancelled');
 }
 
-function handleCancelled(){
-  if(gameListener){ gameListener(); gameListener=null; }
-  if(!$('s-cancelled').classList.contains('active')) show('s-cancelled');
+function goCancelled(){
+  if(unsubscribe){unsubscribe();unsubscribe=null;}
+  if(!$('s-cancelled').classList.contains('active'))show('s-cancelled');
 }
-
-function resetGame(){
-  if(gameListener){ gameListener(); gameListener=null; }
-  window.location.reload();
-}
-
 </script>
 </body>
 </html>
