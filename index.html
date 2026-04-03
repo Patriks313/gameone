@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 2.3
+     SHADOW COUNCIL · Version: 2.6
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -151,6 +151,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
     <div class="eyebrow">Room</div>
     <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;letter-spacing:0.2em;" id="player-room-display">—</div>
   </div>
+  <p id="player-debug" style="font-size:12px;color:var(--ink3);text-align:center;margin-top:1rem;">Connecting…</p>
   <div class="spacer"></div>
 </div>
 
@@ -358,6 +359,11 @@ function listenToGame(){
   unsubscribe=onValue(gref('games/'+L.room),snap=>{
     if(!snap.exists()){goCancelled();return;}
     const g=snap.val();
+    // Always show status in player hint for debugging
+    const ph=$('player-hint');
+    if(ph) ph.textContent='Game status: '+g.status+' | Me: '+L.myName;
+    const pd=$('player-debug');
+    if(pd) pd.textContent='Status: '+g.status+' | Me: "'+L.myName+'" | Players: '+Object.keys(g.players||{}).join(', ');
     if(g.status==='cancelled'){goCancelled();return;}
     if(g.status==='lobby')onLobby(g);
     else if(g.status==='reveal'){onReveal(g);checkAllReady(g);}
@@ -388,19 +394,18 @@ async function startGame(){
     const sh=[...ps].sort(()=>Math.random()-0.5);
     const e1=sh[0].name,e2=sh[1].name;
     const pair=generatePasswords();
-    const playerUpdates={};
-    ps.forEach(p=>{
-      playerUpdates[p.name]={
-        name:p.name,
+    btn.textContent='Writing to Firebase…';
+    // Update each player individually — avoids overwriting entire players object
+    for(const p of ps){
+      await update(gref('games/'+L.room+'/players/'+p.name),{
         role:p.name===e1||p.name===e2?'evil':'good',
         word:p.name===e1?pair[0]:p.name===e2?pair[1]:'',
         eliminated:false,
         ready:false
-      };
-    });
-    btn.textContent='Writing to Firebase…';
+      });
+    }
+    // Set game state last — this triggers the listener on all phones
     await update(gref('games/'+L.room),{
-      players:playerUpdates,
       words:pair,
       status:'reveal',
       round:1,
