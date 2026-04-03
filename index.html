@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 2.2
+     SHADOW COUNCIL · Version: 2.3
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -429,7 +429,17 @@ function generatePasswords(){
 
 function onReveal(g){
   if($('s-role-reveal').classList.contains('active'))return;
-  const me=g.players[L.myName];if(!me)return;
+  const me=g.players[L.myName];
+  if(!me){
+    // Show debug — player not found in game data
+    $('player-hint') && ($('player-hint').textContent='Waiting… (my name: '+L.myName+', players: '+Object.keys(g.players||{}).join(',')+')');
+    // Try anyway after short delay
+    setTimeout(()=>{
+      const snap2=g.players[L.myName];
+      if(!snap2) show('s-role-reveal'); // show blank reveal if still missing
+    },2000);
+    return;
+  }
   const rc=$('reveal-content');
   rc.classList.add('blurred');rc.classList.remove('revealed');
   $('reveal-btn').style.display='block';
