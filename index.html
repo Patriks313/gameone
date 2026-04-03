@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 1.5
+     SHADOW COUNCIL · Version: 1.8
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -217,7 +217,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   </div>
   <div id="game-continues" style="width:100%;display:none;">
     <div class="card" style="text-align:center;"><p style="font-size:14px;color:var(--ink2);" id="continues-text">Game continues.</p></div>
-    <button class="btn btn-primary" id="continue-btn" style="display:none;">I'm ready — continue</button>
+    <button class="btn btn-primary" id="continue-btn" style="display:none;">Next round — review your role</button>
   </div>
   <div id="game-over-trigger" style="width:100%;display:none;">
     <button class="btn btn-gold" id="see-result-btn">See final result ✦</button>
@@ -360,10 +360,10 @@ function listenToGame(){
     const g=snap.val();
     if(g.status==='cancelled'){goCancelled();return;}
     if(g.status==='lobby')onLobby(g);
-    else if(g.status==='reveal')onReveal(g);
+    else if(g.status==='reveal'){onReveal(g);checkAllReady(g);}
     else if(g.status==='discussion')onDiscussion(g);
     else if(g.status==='voting')onVoting(g);
-    else if(g.status==='result'){onResult(g);updateReadyCount(g);if(L.isHost)checkAllReady(g);}
+    else if(g.status==='result'){onResult(g);if(L.isHost)checkAllReady(g);}
     else if(g.status==='gameover')onGameOver(g);
   });
 }
@@ -415,7 +415,9 @@ function onReveal(g){
   const me=g.players[L.myName];if(!me)return;
   const rc=$('reveal-content');
   rc.classList.add('blurred');rc.classList.remove('revealed');
-  $('reveal-btn').style.display='block';$('reveal-done-btn').style.display='none';
+  $('reveal-btn').style.display='block';
+  $('reveal-done-btn').style.display='none';
+  $('reveal-waiting').style.display='none';
   if(me.role==='evil'){
     const partner=Object.values(g.players).find(p=>p.role==='evil'&&p.name!==L.myName);
     rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Work your secret word naturally into conversation. Find the other evil player — they carry the related word.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Your secret word</div><div class="password-word">${me.word}</div></div><div class="password-box" style="margin-top:8px;"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">The other evil player's word</div><div class="password-word">${partner?partner.word:'?'}</div><div style="font-size:12px;margin-top:4px;opacity:0.6;">You do not know who carries this word.</div></div></div>`;
@@ -428,8 +430,10 @@ function onReveal(g){
 function revealRole(){$('reveal-content').classList.add('revealed');$('reveal-btn').style.display='none';$('reveal-done-btn').style.display='block';}
 
 async function goToDiscussion(){
-  await update(gref('games/'+L.room+'/players/'+L.myName),{ready:true});
-  await update(gref('games/'+L.room),{status:'discussion'});
+  // Mark ready — host watches and advances when all players are ready
+  await update(gref('games/'+L.room+'/readyForNext'),{[L.myName]:true});
+  $('reveal-done-btn').style.display='none';
+  $('reveal-waiting').style.display='block';
 }
 
 function onDiscussion(g){
@@ -463,21 +467,21 @@ function onVoting(g){
   const voteCount=Object.keys(votes).length;
   const eligibleCount=active.length;
 
-  const isFinal=active.length<=2;
   const allPlayers=Object.values(g.players||{});
-  // In final round all original players vote, otherwise only active (non-eliminated)
-  const voterCount=isFinal?allPlayers.length:eligibleCount;
+  const isFinal=active.length<=2;
+  // Final round: all original players vote; normal round: only active players
+  const voterPool=isFinal?allPlayers:active;
+  const voterCount=voterPool.length;
 
   // Auto-close when all eligible voters have voted — host triggers it
   if(L.isHost&&voteCount>=voterCount&&voterCount>0){closeVoting();return;}
 
   if(L.isHost){
     $('host-voting-controls').style.display='block';
-    const allVoted=voteCount>=voterCount;
-    $('voting-votes-count').textContent=voteCount+' / '+voterCount+' voted'+(allVoted?' — closing…':'');
+    $('voting-votes-count').textContent=voteCount+' / '+voterCount+' voted';
   }else{
     $('host-voting-controls').style.display='none';
-    if(!isFinal) $('voting-sub').textContent=voteCount+' of '+voterCount+' voted';
+    $('voting-sub').textContent=voteCount+' of '+voterCount+' voted';
   }
 
   const myVote=votes[L.myName]||null;
@@ -502,7 +506,12 @@ function onVoting(g){
   if(!$('s-voting').classList.contains('active'))show('s-voting');
 }
 
+let lastProcessedRound = 0;
 async function onResult(g){
+  // Only process each round once — prevent double-writes from listener re-firing
+  const thisRound = g.round||1;
+  if(L.isHost && lastProcessedRound === thisRound) return;
+  if(L.isHost) lastProcessedRound = thisRound;
   const players=Object.values(g.players||{});
   // DEBUG — show state on screen
   const dbg=document.getElementById('debug-info');
@@ -555,44 +564,44 @@ async function onResult(g){
   }else{
     $('game-continues').style.display='block';
     $('continues-text').textContent=remainGood+' good vs '+remainEvil+' evil still in the game.';
-    $('continue-btn').style.display='block';
-    $('continue-btn').textContent="I'm ready — continue";
+    $('continue-btn').style.display=L.isHost?'block':'none';
   }
-  // Update ready count if already on result screen
-  updateReadyCount(g);
   show('s-vote-result');
 }
 
-function updateReadyCount(g){
-  const btn=$('continue-btn');
-  if(!btn||btn.style.display==='none')return;
-  const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
-  const readyCount=Object.keys(g.readyForNext||{}).length;
-  const myReady=(g.readyForNext||{})[L.myName];
-  if(myReady){
-    btn.textContent='Waiting for others… ('+readyCount+'/'+active.length+')';
-    btn.disabled=true; btn.style.opacity='0.5';
-  } else {
-    btn.textContent="I'm ready — continue";
-    btn.disabled=false; btn.style.opacity='1';
-  }
-}
-
 async function continueRound(){
-  // Mark this player as ready for next round
-  await update(gref('games/'+L.room+'/readyForNext'),{[L.myName]:true});
+  lastProcessedRound=0;
+  const snap=await get(gref('games/'+L.room));
+  const g=snap.val();
+  await update(gref('games/'+L.room),{
+    status:'discussion', votingOpen:false, votes:{}, round:(g.round||1)+1
+  });
 }
 
 async function checkAllReady(g){
-  // Called by host only — advance when all active (non-eliminated) players are ready
-  const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
+  const allPlayers=Object.values(g.players||{});
+  const active=allPlayers.filter(p=>!p.eliminated);
   const ready=Object.keys(g.readyForNext||{});
+  const readyCount=ready.length;
+
+  // Update waiting count on reveal screen for non-host players
+  const rc=$('reveal-ready-count');
+  if(rc) rc.textContent='('+readyCount+' / '+active.length+' ready)';
+
   const allReady=active.every(p=>ready.includes(p.name));
-  if(allReady){
-    await update(gref('games/'+L.room),{
-      status:'discussion',votingOpen:false,votes:{},
-      readyForNext:{},round:(g.round||1)+1
-    });
+  if(L.isHost && allReady && active.length>0){
+    if(g.status==='reveal'){
+      // First time: go to discussion round 1
+      await update(gref('games/'+L.room),{
+        status:'discussion',votingOpen:false,votes:{},readyForNext:{}
+      });
+    } else {
+      // Subsequent rounds
+      await update(gref('games/'+L.room),{
+        status:'discussion',votingOpen:false,votes:{},
+        readyForNext:{},round:(g.round||1)+1
+      });
+    }
   }
 }
 
