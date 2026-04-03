@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 1.2
+     SHADOW COUNCIL · Version: 1.2d
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -206,6 +206,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 
 <!-- VOTE RESULT -->
 <div class="screen" id="s-vote-result">
+  <div id="debug-info" style="display:none;background:#222;color:#9f9;font-size:11px;padding:8px;border-radius:6px;width:100%;margin-bottom:8px;word-break:break-all;"></div>
   <div class="eyebrow" style="margin-top:0.5rem;">Vote result</div>
   <h2 style="margin-bottom:1rem;" id="result-round-label">Round 1</h2>
   <div style="width:100%;margin-bottom:1rem;" id="result-bars"></div>
@@ -503,6 +504,14 @@ function onVoting(g){
 
 async function onResult(g){
   const players=Object.values(g.players||{});
+  // DEBUG — show state on screen
+  const dbg=document.getElementById('debug-info');
+  if(dbg){
+    const ev=players.filter(p=>p.role==='evil');
+    const ac=players.filter(p=>!p.eliminated);
+    dbg.textContent='Players: '+players.length+' | Active: '+ac.length+' | Evil: '+ev.map(p=>p.name+'(elim='+p.eliminated+')').join(',')+'  | Status: '+g.status+' | Round: '+g.round;
+    dbg.style.display='block';
+  }
   const tally={};
   players.filter(p=>!p.eliminated).forEach(p=>{tally[p.name]=0;});
   Object.values(g.votes||{}).forEach(v=>{if(tally[v]!==undefined)tally[v]++;});
