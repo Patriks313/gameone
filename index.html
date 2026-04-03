@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
      SHADOW COUNCIL
-     Version: 0.9f
+     Version: 0.9h
      Change the number above when releasing a new version.
      The page reads it automatically — no other edits needed.
 ═══════════════════════════════ -->
@@ -269,8 +269,8 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { initializeApp } from "https://cdn.jsdelivr.net/npm/firebase@10.12.0/app/+esm";
+import { getDatabase, ref, set, get, update, onValue } from "https://cdn.jsdelivr.net/npm/firebase@10.12.0/database/+esm";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAYghIMXjI2wmREEgyiVubCC83WhF3_I40",
@@ -293,6 +293,10 @@ const $ = id => document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
 function genCode(){ return String(Math.floor(1000+Math.random()*9000)); }
 function gref(path){ return ref(db, path); }
+
+// ── BOOT CHECK ─────────────────────────────────────
+document.getElementById('boot-test').style.display = 'block';
+setTimeout(()=>{ document.getElementById('boot-test').style.display='none'; }, 3000);
 
 // ── GLOBAL ERROR CATCHER ───────────────────────────
 window.onerror = (msg, src, line) => {
