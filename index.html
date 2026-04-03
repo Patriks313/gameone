@@ -1,346 +1,462 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="BrainBurst" />
-  <title>BrainBurst</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #ffffff;
-      --bg2: #f5f4f0;
-      --bg3: #eeede9;
-      --text: #1a1a18;
-      --text2: #6b6b67;
-      --border: rgba(0,0,0,0.12);
-      --border2: rgba(0,0,0,0.25);
-      --green-bg: #E1F5EE;
-      --green-text: #085041;
-      --green-border: #1D9E75;
-      --red-bg: #FCEBEB;
-      --red-text: #501313;
-      --red-border: #E24B4A;
-      --radius: 12px;
-      --radius-sm: 8px;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #1c1c1a;
-        --bg2: #252523;
-        --bg3: #2e2e2c;
-        --text: #f0efe9;
-        --text2: #9b9b95;
-        --border: rgba(255,255,255,0.1);
-        --border2: rgba(255,255,255,0.22);
-        --green-bg: #04342C;
-        --green-text: #9FE1CB;
-        --green-border: #0F6E56;
-        --red-bg: #501313;
-        --red-text: #F7C1C1;
-        --red-border: #A32D2D;
-      }
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg3);
-      color: var(--text);
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 0 0 env(safe-area-inset-bottom);
-    }
-    .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 480px; padding: 2rem 1rem; min-height: 100dvh; }
-    .screen.active { display: flex; }
-    .logo { font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text2); margin-bottom: 2.5rem; }
-    .big-title { font-size: 30px; font-weight: 600; color: var(--text); text-align: center; margin-bottom: 0.5rem; line-height: 1.2; }
-    .sub { font-size: 15px; color: var(--text2); text-align: center; margin-bottom: 2rem; }
-    .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; width: 100%; }
-    .field-label { font-size: 11px; font-weight: 600; color: var(--text2); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
-    .field-row { margin-bottom: 1.1rem; }
-    input[type=text], input[type=number] {
-      width: 100%; padding: 11px 14px; background: var(--bg2); border: 0.5px solid var(--border);
-      border-radius: var(--radius-sm); font-size: 16px; color: var(--text); outline: none;
-      font-family: inherit; -webkit-appearance: none; appearance: none;
-    }
-    input[type=text]:focus, input[type=number]:focus { border-color: var(--border2); }
-    .btn-primary {
-      width: 100%; padding: 13px; background: var(--text); color: var(--bg);
-      border: none; border-radius: var(--radius-sm); font-size: 16px; font-weight: 600;
-      cursor: pointer; margin-top: 0.5rem; font-family: inherit; -webkit-tap-highlight-color: transparent;
-    }
-    .btn-primary:active { opacity: 0.8; }
-    .btn-secondary {
-      background: transparent; border: 0.5px solid var(--border2); color: var(--text);
-      border-radius: var(--radius-sm); padding: 10px 20px; font-size: 14px; cursor: pointer;
-      font-family: inherit; -webkit-tap-highlight-color: transparent;
-    }
-    .btn-secondary:active { background: var(--bg2); }
-    .mode-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; width: 100%; }
-    .tab {
-      flex: 1; padding: 10px; background: var(--bg2); border: 0.5px solid var(--border);
-      border-radius: var(--radius-sm); font-size: 14px; cursor: pointer; font-family: inherit;
-      color: var(--text2); font-weight: 500; -webkit-tap-highlight-color: transparent;
-    }
-    .tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-    .error { font-size: 13px; color: var(--red-border); margin-top: 8px; min-height: 18px; }
-    .room-code { font-size: 56px; font-weight: 700; letter-spacing: 0.2em; color: var(--text); text-align: center; margin: 1rem 0; font-variant-numeric: tabular-nums; }
-    .players-list { width: 100%; margin-top: 1.5rem; }
-    .players-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .players-label { font-size: 11px; font-weight: 600; color: var(--text2); letter-spacing: 0.1em; text-transform: uppercase; }
-    .player-count { font-size: 13px; color: var(--text2); }
-    .players-area { display: flex; flex-wrap: wrap; gap: 6px; }
-    .player-chip { display: inline-flex; align-items: center; gap: 7px; background: var(--bg); border: 0.5px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 14px; color: var(--text); }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-border); flex-shrink: 0; }
-    .divider { width: 100%; border: none; border-top: 0.5px solid var(--border); margin: 1.5rem 0; }
-    .progress-bar { width: 100%; background: var(--bg2); border-radius: 4px; height: 4px; margin-bottom: 1.5rem; }
-    .progress-fill { height: 4px; border-radius: 4px; background: var(--text); transition: width 0.4s; }
-    .question-text { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 1.5rem; line-height: 1.4; text-align: center; }
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
-    .option-btn {
-      padding: 16px 10px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
-      background: var(--bg); font-size: 14px; cursor: pointer; font-family: inherit;
-      color: var(--text); text-align: center; line-height: 1.3; -webkit-tap-highlight-color: transparent;
-    }
-    .option-btn:active:not(:disabled) { background: var(--bg2); }
-    .option-btn.correct { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); }
-    .option-btn.wrong { background: var(--red-bg); border-color: var(--red-border); color: var(--red-text); }
-    .option-btn:disabled { cursor: default; }
-    .tag { font-size: 12px; color: var(--text2); padding: 3px 10px; background: var(--bg2); border-radius: 999px; }
-    .score-pill { font-size: 13px; color: var(--text2); }
-    .scoreboard { width: 100%; }
-    .score-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--border); }
-    .rank { font-size: 18px; min-width: 28px; }
-    .score-name { flex: 1; font-size: 15px; color: var(--text); }
-    .score-pts { font-size: 15px; font-weight: 600; color: var(--text); }
-    .winner-badge { font-size: 12px; background: var(--green-bg); color: var(--green-text); border-radius: 999px; padding: 3px 10px; }
-    .spacer { flex: 1; }
-    .footer-note { font-size: 12px; color: var(--text2); text-align: center; margin-top: 2rem; padding-bottom: 1rem; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Shadow Council"/>
+<title>Shadow Council</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--ink:#0e0d0b;--ink2:#5a5750;--ink3:#9a9690;--parchment:#f5f0e8;--parchment2:#ede7d8;--parchment3:#d8d0bc;--evil:#8B2020;--evil-light:#fdf0f0;--good:#1a4a2e;--good-light:#f0f7f2;--gold:#b8862a;--radius:14px;--radius-sm:8px;}
+html,body{height:100%;background:var(--parchment);color:var(--ink);font-family:'DM Sans',sans-serif;}
+body{display:flex;flex-direction:column;align-items:center;min-height:100dvh;}
+.screen{display:none;flex-direction:column;align-items:center;width:100%;max-width:480px;min-height:100dvh;padding:1.5rem 1.2rem 2rem;}
+.screen.active{display:flex;}
+h1{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:600;line-height:1.1;text-align:center;}
+h2{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;text-align:center;}
+h3{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;}
+.eyebrow{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:0.5rem;}
+.sub{font-size:15px;color:var(--ink2);text-align:center;line-height:1.6;margin-bottom:1.2rem;}
+.card{background:#fff;border:1px solid var(--parchment3);border-radius:var(--radius);padding:1.4rem;width:100%;margin-bottom:1rem;}
+input[type=text]{width:100%;padding:12px 14px;background:var(--parchment);border:1px solid var(--parchment3);border-radius:var(--radius-sm);font-size:16px;color:var(--ink);outline:none;font-family:'DM Sans',sans-serif;-webkit-appearance:none;}
+input[type=text]:focus{border-color:var(--ink);background:#fff;}
+.field-label{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;}
+.field-row{margin-bottom:1rem;}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;transition:opacity .15s,transform .1s;text-align:center;}
+.btn:active{transform:scale(0.98);opacity:0.85;}
+.btn-primary{background:var(--ink);color:var(--parchment);}
+.btn-evil{background:var(--evil);color:#fff;}
+.btn-ghost{background:transparent;border:1px solid var(--parchment3);color:var(--ink);}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-good{background:var(--good);color:#fff;}
+.tabs{display:flex;gap:6px;width:100%;margin-bottom:1.4rem;}
+.tab{flex:1;padding:10px;border:1px solid var(--parchment3);border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--parchment2);color:var(--ink2);-webkit-tap-highlight-color:transparent;}
+.tab.active{background:var(--ink);color:var(--parchment);border-color:var(--ink);}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:500;background:var(--parchment2);border:1px solid var(--parchment3);color:var(--ink);}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;flex-shrink:0;}
+.room-code{font-family:'Cormorant Garamond',serif;font-size:4.5rem;font-weight:600;letter-spacing:0.25em;color:var(--ink);text-align:center;line-height:1;}
+.role-evil{background:var(--evil);color:#fff;border-radius:var(--radius);padding:1.6rem;width:100%;margin-bottom:1rem;}
+.role-good{background:var(--good);color:#fff;border-radius:var(--radius);padding:1.6rem;width:100%;margin-bottom:1rem;}
+.role-label{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;margin-bottom:0.5rem;}
+.password-box{background:rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:0.9rem 1rem;margin-top:0.8rem;}
+.password-word{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;}
+.vote-btn{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--parchment3);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:var(--ink);width:100%;margin-bottom:8px;-webkit-tap-highlight-color:transparent;transition:all .15s;}
+.vote-btn.selected{background:var(--ink);color:var(--parchment);border-color:var(--ink);}
+.vote-btn.is-me{opacity:0.3;pointer-events:none;}
+.result-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.result-name{font-size:14px;font-weight:500;min-width:80px;color:var(--ink);}
+.result-bar-wrap{flex:1;background:var(--parchment2);border-radius:4px;height:8px;overflow:hidden;}
+.result-bar{height:8px;border-radius:4px;background:var(--evil);transition:width 0.8s ease;}
+.result-votes{font-size:13px;color:var(--ink2);min-width:24px;text-align:right;}
+.eliminated-card{color:#fff;border-radius:var(--radius);padding:1.4rem;text-align:center;width:100%;margin-bottom:1rem;}
+.eliminated-name{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;}
+.win-banner{border-radius:var(--radius);padding:2rem 1.4rem;text-align:center;width:100%;margin-bottom:1rem;color:#fff;}
+.win-good{background:var(--good);}.win-evil{background:var(--evil);}
+.win-title{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:600;margin-bottom:0.3rem;}
+.rule-block{border-left:3px solid var(--gold);padding-left:1rem;margin-bottom:1.2rem;}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;}
+.badge-evil{background:var(--evil-light);color:var(--evil);border:1px solid rgba(139,32,32,0.2);}
+.badge-good{background:var(--good-light);color:var(--good);border:1px solid rgba(26,74,46,0.2);}
+.badge-out{background:var(--parchment2);color:var(--ink3);border:1px solid var(--parchment3);}
+.section-header{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;margin-top:0.8rem;}
+.status-bar{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px;background:var(--parchment);border:1px solid var(--parchment3);border-radius:var(--radius-sm);margin-bottom:10px;font-size:13px;}
+.status-dot{width:8px;height:8px;border-radius:50%;margin-right:6px;display:inline-block;}
+.dot-open{background:#1D9E75;}.dot-closed{background:var(--evil);}
+.blurred{filter:blur(10px);transition:filter 0.5s;}.blurred.revealed{filter:none;}
+hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
+.spacer{flex:1;}
+.error{font-size:13px;color:var(--evil);margin-top:6px;min-height:18px;}
+.ornament{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold);text-align:center;margin:0.4rem 0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner{width:26px;height:26px;border:2px solid var(--parchment3);border-top-color:var(--ink);border-radius:50%;animation:spin 0.8s linear infinite;margin:1rem auto;}
+</style>
 </head>
 <body>
 
-  <!-- LANDING -->
-  <div class="screen active" id="s-landing">
-    <div class="spacer"></div>
-    <div class="logo">BrainBurst</div>
-    <div class="big-title">Trivia for the room</div>
-    <div class="sub">One host. Everyone plays on their phone.</div>
-    <div class="mode-tabs">
-      <button class="tab active" id="tab-host" onclick="setMode('host')">Host a game</button>
-      <button class="tab" id="tab-join" onclick="setMode('join')">Join a game</button>
-    </div>
-    <div class="card" id="host-form">
-      <div class="field-row">
-        <div class="field-label">Your name</div>
-        <input type="text" id="host-name" placeholder="e.g. Alex" maxlength="20" autocomplete="off" />
-      </div>
-      <div class="field-row">
-        <div class="field-label">Questions per round</div>
-        <input type="number" id="q-count" value="5" min="3" max="10" />
-      </div>
-      <button class="btn-primary" onclick="hostGame()">Create game</button>
+<!-- LANDING -->
+<div class="screen active" id="s-landing">
+  <div class="spacer"></div>
+  <div class="ornament">✦ ✦ ✦</div>
+  <h1 style="margin-bottom:0.5rem;">Shadow<br/>Council</h1>
+  <p class="sub" style="margin-top:0.6rem;">A game of trust, deception,<br/>and hidden words.</p>
+  <div class="tabs">
+    <button class="tab active" id="tab-host" onclick="setMode('host')">Host game</button>
+    <button class="tab" id="tab-join" onclick="setMode('join')">Join game</button>
+    <button class="tab" id="tab-rules" onclick="setMode('rules')">Rules</button>
+  </div>
+  <div id="form-host" style="width:100%">
+    <div class="card">
+      <div class="field-row"><div class="field-label">Your name</div><input type="text" id="host-name" placeholder="Enter your name" maxlength="20" autocomplete="off"/></div>
+      <button class="btn btn-primary" onclick="hostGame()">Create game room</button>
       <div class="error" id="host-err"></div>
     </div>
-    <div class="card" id="join-form" style="display:none">
-      <div class="field-row">
-        <div class="field-label">Room code</div>
-        <input type="text" id="join-code" placeholder="4-digit code" maxlength="4" autocomplete="off"
-          style="letter-spacing:0.2em;font-size:22px;text-align:center" />
-      </div>
-      <div class="field-row">
-        <div class="field-label">Your name</div>
-        <input type="text" id="join-name" placeholder="e.g. Sam" maxlength="20" autocomplete="off" />
-      </div>
-      <button class="btn-primary" onclick="joinGame()">Join game</button>
+  </div>
+  <div id="form-join" style="width:100%;display:none">
+    <div class="card">
+      <div class="field-row"><div class="field-label">Room code</div><input type="text" id="join-code" placeholder="4-digit code" maxlength="4" autocomplete="off" style="letter-spacing:0.25em;font-size:22px;text-align:center;font-family:'Cormorant Garamond',serif;font-weight:600;"/></div>
+      <div class="field-row"><div class="field-label">Your name</div><input type="text" id="join-name" placeholder="Enter your name" maxlength="20" autocomplete="off"/></div>
+      <button class="btn btn-primary" onclick="joinGame()">Join the council</button>
       <div class="error" id="join-err"></div>
     </div>
-    <div class="spacer"></div>
-    <div class="spacer"></div>
-    <div class="footer-note">Prototype v1 — everything runs locally, no server yet</div>
   </div>
-
-  <!-- HOST LOBBY -->
-  <div class="screen" id="s-host-lobby">
-    <div class="logo">BrainBurst — host</div>
-    <div class="big-title">Waiting for players</div>
-    <div class="sub">Share this code with everyone in the room</div>
-    <div class="card" style="text-align:center">
-      <div class="field-label">Room code</div>
-      <div class="room-code" id="display-code">—</div>
-      <div style="font-size:13px;color:var(--text2)">Players tap "Join a game" and enter this code</div>
-    </div>
-    <div class="players-list">
-      <div class="players-header">
-        <span class="players-label">Players joined</span>
-        <span class="player-count" id="player-count">0 players</span>
-      </div>
-      <div class="players-area" id="players-area"></div>
-    </div>
-    <hr class="divider">
-    <button class="btn-primary" onclick="startGame()" id="start-btn" style="opacity:0.4">Start game</button>
-    <div style="font-size:13px;color:var(--text2);margin-top:10px;text-align:center" id="start-hint">Add at least 1 player to start</div>
-  </div>
-
-  <!-- PLAYER LOBBY -->
-  <div class="screen" id="s-player-lobby">
-    <div class="spacer"></div>
-    <div class="logo">BrainBurst</div>
-    <div class="big-title">You're in!</div>
-    <div class="sub">Waiting for the host to start…</div>
-    <div class="card" style="text-align:center">
-      <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Joined as</div>
-      <div style="font-size:24px;font-weight:600;color:var(--text)" id="player-name-display">—</div>
-    </div>
-    <div class="spacer"></div>
-    <div class="spacer"></div>
-  </div>
-
-  <!-- QUESTION -->
-  <div class="screen" id="s-question">
-    <div class="logo" id="q-role-label">BrainBurst</div>
-    <div class="card" style="width:100%">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-        <span class="tag" id="q-num-label">Q 1 / 5</span>
-        <span class="score-pill" id="q-score-display">Score: 0</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" id="q-progress" style="width:20%"></div></div>
-      <div class="question-text" id="q-text">Loading…</div>
-      <div class="options-grid" id="q-options"></div>
-      <div style="text-align:center;min-height:44px">
-        <button class="btn-secondary" id="q-next-btn" onclick="nextQuestion()" style="display:none">Next question →</button>
-      </div>
+  <div id="form-rules" style="width:100%;display:none">
+    <div class="card">
+      <h3 style="margin-bottom:1rem;">How to play</h3>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The setup</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">The host creates a room and shares a 4-digit code. Everyone joins on their own phone. When the host starts, two players are secretly chosen as Evil.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The evil pair</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Evil players receive a secret password — one word each from a pair (e.g. "salt" and "pepper"). They know both words and who carries which. They must find each other through conversation without being caught.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The good players</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Good players only know they are not evil. Listen carefully — the evil pair will try to slip their passwords into natural conversation to signal each other.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Voting</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">When the host opens voting, everyone taps who they suspect. The player with the most votes is eliminated and may watch but not vote again. The host closes voting and everyone sees the result together.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Winning</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;"><strong>Good wins</strong> when both evil players are eliminated. <strong>Evil wins</strong> when the evil players equal or outnumber the remaining good players.</div></div>
     </div>
   </div>
+  <div class="spacer"></div>
+  <p style="font-size:11px;color:var(--ink3);padding-bottom:1rem;text-align:center;">Prototype v2 · local play · no server sync yet</p>
+</div>
 
-  <!-- RESULTS -->
-  <div class="screen" id="s-results">
-    <div class="logo">BrainBurst — results</div>
-    <div class="big-title">Game over!</div>
-    <div class="sub" id="result-sub">Here's how everyone did</div>
-    <div class="scoreboard" id="scoreboard"></div>
-    <hr class="divider">
-    <button class="btn-primary" onclick="resetGame()">Play again</button>
+<!-- HOST LOBBY -->
+<div class="screen" id="s-host-lobby">
+  <div class="eyebrow" style="margin-top:0.5rem;">Game leader</div>
+  <h2 style="margin-bottom:0.3rem;">Waiting for players</h2>
+  <p class="sub">Share the code — everyone opens the app and joins</p>
+  <div class="card" style="text-align:center;">
+    <div class="eyebrow">Room code</div>
+    <div class="room-code" id="display-code">—</div>
+    <p style="font-size:13px;color:var(--ink2);margin-top:0.4rem;">Players tap "Join game" and enter this code</p>
   </div>
+  <div style="width:100%">
+    <div class="section-header">Players in room</div>
+    <div class="chips" id="lobby-chips"></div>
+    <p style="font-size:12px;color:var(--ink3);margin-top:8px;" id="player-hint">Waiting for players…</p>
+  </div>
+  <hr/>
+  <p style="font-size:13px;color:var(--ink2);margin-bottom:10px;text-align:center;">Minimum 4 players needed (2 will be evil)</p>
+  <button class="btn btn-primary" id="start-btn" style="opacity:0.4;pointer-events:none;" onclick="startGame()">Start the council</button>
+  <div class="spacer"></div>
+  <button class="btn btn-ghost" style="margin-bottom:0;font-size:13px;" onclick="addDemoPlayers()">+ Add demo players (for testing)</button>
+</div>
+
+<!-- PLAYER WAITING -->
+<div class="screen" id="s-player-wait">
+  <div class="spacer"></div>
+  <div class="ornament">✦</div>
+  <h2 style="margin-bottom:0.5rem;">You're in the council</h2>
+  <p class="sub">The host will start shortly.<br/>Keep your phone close.</p>
+  <div class="card" style="text-align:center;">
+    <div class="eyebrow">Joined as</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;" id="player-joined-name">—</div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- ROLE REVEAL -->
+<div class="screen" id="s-role-reveal">
+  <div class="eyebrow" style="margin-top:0.5rem;" id="reveal-eyebrow">Pass the phone</div>
+  <h2 style="margin-bottom:0.3rem;" id="reveal-name-header">—</h2>
+  <p class="sub" id="reveal-instruction">Tap when you are ready to see your role — keep it secret!</p>
+  <div id="reveal-content" class="blurred" style="width:100%;"></div>
+  <button class="btn btn-ghost" id="reveal-btn" onclick="revealRole()" style="margin-top:0.5rem;">Tap to reveal my role</button>
+  <button class="btn btn-primary" id="reveal-next-btn" onclick="nextReveal()" style="display:none;margin-top:0.5rem;">Done — pass to next player ›</button>
+  <div class="spacer"></div>
+</div>
+
+<!-- DISCUSSION -->
+<div class="screen" id="s-discussion">
+  <div class="eyebrow" style="margin-top:0.5rem;">Round <span id="disc-round">1</span></div>
+  <h2 style="margin-bottom:0.3rem;">Discussion</h2>
+  <p class="sub">Talk amongst yourselves.<br/>The host will open voting when ready.</p>
+  <div id="host-vote-controls" style="width:100%;display:none;">
+    <div class="card">
+      <div class="section-header" style="margin-top:0;">Host controls</div>
+      <div class="status-bar"><span><span class="status-dot dot-closed" id="vote-dot"></span><span id="vote-status-text">Voting closed</span></span><span id="votes-cast-count" style="color:var(--ink2);">0 votes cast</span></div>
+      <button class="btn btn-primary" id="open-vote-btn" onclick="openVoting()">Open voting</button>
+      <button class="btn btn-evil" id="close-vote-btn" onclick="closeVoting()" style="display:none;margin-top:8px;">Close voting &amp; show result</button>
+    </div>
+  </div>
+  <div id="player-role-reminder" style="width:100%;display:none;"><div id="reminder-content"></div></div>
+  <div style="width:100%;">
+    <div class="section-header">Still in the game</div>
+    <div class="chips" id="disc-chips"></div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- VOTING -->
+<div class="screen" id="s-voting">
+  <div class="eyebrow" style="margin-top:0.5rem;">Voting is open</div>
+  <h2 style="margin-bottom:0.3rem;">Who is evil?</h2>
+  <p class="sub" id="voting-sub">Tap your suspect. You can change your vote until the host closes it.</p>
+  <div id="vote-list" style="width:100%;"></div>
+  <div id="vote-submitted-msg" style="display:none;text-align:center;padding:1rem 0;">
+    <p style="font-size:14px;color:var(--ink2);">Vote cast. Waiting for host to close voting…</p>
+    <div class="spinner"></div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- VOTE RESULT -->
+<div class="screen" id="s-vote-result">
+  <div class="eyebrow" style="margin-top:0.5rem;">Vote result</div>
+  <h2 style="margin-bottom:1rem;" id="result-round-label">Round 1</h2>
+  <div style="width:100%;margin-bottom:1rem;" id="result-bars"></div>
+  <div class="eliminated-card" id="eliminated-card">
+    <div style="font-size:11px;opacity:0.7;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em;">Eliminated</div>
+    <div class="eliminated-name" id="eliminated-name">—</div>
+    <div id="eliminated-role-reveal" style="margin-top:0.5rem;font-size:14px;opacity:0.85;"></div>
+  </div>
+  <div id="game-continues" style="width:100%;display:none;">
+    <div class="card" style="text-align:center;"><p style="font-size:14px;color:var(--ink2);" id="continues-text">Game continues.</p></div>
+    <button class="btn btn-primary" onclick="continueGame()">Continue to next round</button>
+  </div>
+  <div id="game-over-trigger" style="width:100%;display:none;">
+    <button class="btn btn-gold" onclick="showWinScreen()">See final result ✦</button>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- WIN SCREEN -->
+<div class="screen" id="s-win">
+  <div class="spacer"></div>
+  <div id="win-banner" class="win-banner">
+    <div class="ornament" style="color:rgba(255,255,255,0.5);">✦ ✦ ✦</div>
+    <div class="win-title" id="win-title">Good wins!</div>
+    <p id="win-subtitle" style="opacity:0.85;font-size:15px;margin-top:0.4rem;"></p>
+  </div>
+  <div style="width:100%;">
+    <div class="section-header">The evil pair</div>
+    <div class="chips" id="evil-reveal-chips" style="margin-bottom:0.5rem;"></div>
+    <div class="section-header">Their secret passwords</div>
+    <div class="card" style="text-align:center;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;" id="win-passwords">—</div>
+    </div>
+    <div class="section-header">All players</div>
+    <div id="win-player-list"></div>
+  </div>
+  <button class="btn btn-primary" style="margin-top:1rem;" onclick="resetGame()">Play again</button>
+  <div class="spacer"></div>
+</div>
 
 <script>
-const QUESTIONS = [
-  { q: "What is the capital of Australia?", options: ["Sydney","Melbourne","Canberra","Brisbane"], correct: 2 },
-  { q: "How many sides does a hexagon have?", options: ["5","6","7","8"], correct: 1 },
-  { q: "Who painted the Mona Lisa?", options: ["Michelangelo","Rembrandt","da Vinci","Vermeer"], correct: 2 },
-  { q: "What is the chemical symbol for gold?", options: ["Ag","Fe","Au","Pb"], correct: 2 },
-  { q: "Which planet is closest to the Sun?", options: ["Venus","Earth","Mars","Mercury"], correct: 3 },
-  { q: "How many bones are in the adult human body?", options: ["196","206","216","226"], correct: 1 },
-  { q: "What year did World War II end?", options: ["1943","1944","1945","1946"], correct: 2 },
-  { q: "Which element has the atomic number 1?", options: ["Helium","Hydrogen","Lithium","Carbon"], correct: 1 },
-  { q: "Who wrote Romeo and Juliet?", options: ["Dickens","Austen","Shakespeare","Marlowe"], correct: 2 },
-  { q: "What is the largest ocean on Earth?", options: ["Atlantic","Indian","Arctic","Pacific"], correct: 3 },
-];
+const G={mode:'host',isHost:false,myName:'',room:'',players:[],words:['',''],round:1,votes:{},votingOpen:false,revealIndex:0,winnerSide:null};
+const $=id=>document.getElementById(id);
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
+function genCode(){return String(Math.floor(1000+Math.random()*9000));}
+function activePlayers(){return G.players.filter(p=>!p.eliminated);}
+function activeEvil(){return G.players.filter(p=>p.role==='evil'&&!p.eliminated);}
+function activeGood(){return G.players.filter(p=>p.role==='good'&&!p.eliminated);}
 
-let state = { mode:'host', room:null, hostName:'', playerName:'', players:[], questions:[], qIndex:0, score:0, answered:false };
-
-function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-
-function setMode(m) {
-  state.mode = m;
-  document.getElementById('tab-host').className = 'tab' + (m==='host'?' active':'');
-  document.getElementById('tab-join').className = 'tab' + (m==='join'?' active':'');
-  document.getElementById('host-form').style.display = m==='host' ? 'block' : 'none';
-  document.getElementById('join-form').style.display = m==='join' ? 'block' : 'none';
-}
-
-function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
-function genCode() { return String(Math.floor(1000 + Math.random() * 9000)); }
-
-function hostGame() {
-  const name = document.getElementById('host-name').value.trim();
-  const qCount = Math.min(Math.max(parseInt(document.getElementById('q-count').value)||5, 3), 10);
-  if (!name) { document.getElementById('host-err').textContent = 'Please enter your name'; return; }
-  document.getElementById('host-err').textContent = '';
-  state.hostName = name; state.room = genCode(); state.players = [];
-  state.questions = shuffle(QUESTIONS).slice(0, qCount); state.qIndex = 0; state.score = 0;
-  document.getElementById('display-code').textContent = state.room;
-  updatePlayerList(); show('s-host-lobby');
-}
-
-function joinGame() {
-  const code = document.getElementById('join-code').value.trim();
-  const name = document.getElementById('join-name').value.trim();
-  if (!/^\d{4}$/.test(code)) { document.getElementById('join-err').textContent = 'Enter the 4-digit room code'; return; }
-  if (!name) { document.getElementById('join-err').textContent = 'Please enter your name'; return; }
-  document.getElementById('join-err').textContent = '';
-  state.playerName = name; state.room = code; state.players.push(name);
-  document.getElementById('player-name-display').textContent = name;
-  updatePlayerList(); show('s-player-lobby');
-}
-
-function updatePlayerList() {
-  const area = document.getElementById('players-area');
-  if (!area) return;
-  area.innerHTML = state.players.map(p => `<span class="player-chip"><span class="dot"></span>${p}</span>`).join('');
-  const c = state.players.length;
-  const cEl = document.getElementById('player-count'); if (cEl) cEl.textContent = c + (c===1?' player':' players');
-  const btn = document.getElementById('start-btn'); const hint = document.getElementById('start-hint');
-  if (btn) { btn.style.opacity = c>0 ? '1' : '0.4'; if (hint) hint.textContent = c>0 ? 'Ready when you are!' : 'Add at least 1 player to start'; }
-}
-
-function startGame() {
-  if (state.players.length === 0) return;
-  state.qIndex = 0; state.score = 0; loadQuestion(); show('s-question');
-}
-
-function loadQuestion() {
-  const q = state.questions[state.qIndex]; const total = state.questions.length;
-  state.answered = false;
-  document.getElementById('q-num-label').textContent = 'Q ' + (state.qIndex+1) + ' / ' + total;
-  document.getElementById('q-score-display').textContent = 'Score: ' + state.score;
-  document.getElementById('q-progress').style.width = (((state.qIndex)/total)*100) + '%';
-  document.getElementById('q-text').textContent = q.q;
-  document.getElementById('q-role-label').textContent = state.hostName ? 'BrainBurst — host' : 'BrainBurst';
-  document.getElementById('q-options').innerHTML = q.options.map((o,i) =>
-    `<button class="option-btn" onclick="answer(${i})" id="opt-${i}">${o}</button>`).join('');
-  document.getElementById('q-next-btn').style.display = 'none';
-}
-
-function answer(idx) {
-  if (state.answered) return;
-  state.answered = true;
-  const correct = state.questions[state.qIndex].correct;
-  state.questions[state.qIndex].options.forEach((_,i) => {
-    const b = document.getElementById('opt-'+i); b.disabled = true;
-    if (i===correct) b.classList.add('correct'); else if (i===idx) b.classList.add('wrong');
+function setMode(m){
+  G.mode=m;
+  ['host','join','rules'].forEach(t=>{
+    $('tab-'+t).classList.toggle('active',t===m);
+    $('form-'+t).style.display=t===m?'block':'none';
   });
-  if (idx===correct) state.score += 100;
-  document.getElementById('q-score-display').textContent = 'Score: ' + state.score;
-  document.getElementById('q-next-btn').style.display = 'inline-block';
 }
 
-function nextQuestion() {
-  state.qIndex++;
-  if (state.qIndex >= state.questions.length) showResults(); else loadQuestion();
+function hostGame(){
+  const name=$('host-name').value.trim();
+  if(!name){$('host-err').textContent='Please enter your name';return;}
+  $('host-err').textContent='';
+  G.isHost=true;G.myName=name;G.room=genCode();G.players=[];G.round=1;
+  $('display-code').textContent=G.room;
+  updateLobbyChips();show('s-host-lobby');
 }
 
-function showResults() {
-  const me = state.hostName || state.playerName;
-  const all = [{ name: me, score: state.score },
-    ...state.players.filter(p => p!==me).map(p => ({ name:p, score: Math.floor(Math.random()*state.questions.length)*100 }))
-  ].sort((a,b) => b.score - a.score);
-  document.getElementById('scoreboard').innerHTML = all.map((p,i) =>
-    `<div class="score-row"><span class="rank">${['🥇','🥈','🥉'][i]||(i+1)+'.'}</span><span class="score-name">${p.name}</span>${i===0?'<span class="winner-badge">winner</span>':''}<span class="score-pts">${p.score} pts</span></div>`
-  ).join('');
-  document.getElementById('result-sub').textContent = all[0].name===me ? 'You won!' : all[0].name + ' wins!';
-  show('s-results');
+function addDemoPlayers(){
+  ['Alice','Bruno','Clara','Diego','Elena','Felix'].forEach(n=>{
+    if(!G.players.find(p=>p.name===n))G.players.push({name:n,role:'good',eliminated:false,word:''});
+  });
+  updateLobbyChips();
 }
 
-function resetGame() {
-  state = { mode:'host', room:null, hostName:'', playerName:'', players:[], questions:[], qIndex:0, score:0, answered:false };
-  document.getElementById('host-name').value = '';
-  document.getElementById('join-name').value = '';
-  document.getElementById('join-code').value = '';
-  setMode('host'); show('s-landing');
+function updateLobbyChips(){
+  const all=[{name:G.myName+' (you)'},...G.players];
+  $('lobby-chips').innerHTML=all.map(p=>`<span class="chip"><span class="dot"></span>${p.name}</span>`).join('');
+  const total=G.players.length+1;
+  $('player-hint').textContent=total+' player'+(total!==1?'s':'')+' in room';
+  const ok=total>=4;
+  $('start-btn').style.opacity=ok?'1':'0.4';
+  $('start-btn').style.pointerEvents=ok?'auto':'none';
+}
+
+function joinGame(){
+  const code=$('join-code').value.trim(),name=$('join-name').value.trim();
+  if(!/^\d{4}$/.test(code)){$('join-err').textContent='Enter the 4-digit room code';return;}
+  if(!name){$('join-err').textContent='Please enter your name';return;}
+  $('join-err').textContent='';
+  G.isHost=false;G.myName=name;G.room=code;
+  G.players.push({name,role:'good',eliminated:false,word:''});
+  $('player-joined-name').textContent=name;
+  show('s-player-wait');
+}
+
+async function startGame(){
+  G.players.unshift({name:G.myName,role:'good',eliminated:false,word:''});
+  const sh=[...G.players].sort(()=>Math.random()-0.5);
+  sh[0].role='evil';sh[1].role='evil';
+  $('start-btn').textContent='Generating passwords…';
+  $('start-btn').style.opacity='0.6';
+  const pair=await generatePasswords();
+  G.words=pair;
+  const evils=G.players.filter(p=>p.role==='evil');
+  evils[0].word=pair[0];evils[1].word=pair[1];
+  G.revealIndex=0;G.round=1;G.votes={};
+  showRevealFor(0);show('s-role-reveal');
+}
+
+async function generatePasswords(){
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:100,messages:[{role:'user',content:'Generate a pair of related everyday words for a social deduction game where players must slip the words into normal conversation. Reply ONLY with JSON: {"word1":"salt","word2":"pepper"} — no explanation, no markdown.'}]})});
+    const d=await r.json();
+    const txt=d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const p=JSON.parse(txt);return[p.word1,p.word2];
+  }catch(e){
+    const fb=[['north','south'],['mountain','valley'],['anchor','compass'],['silver','copper'],['morning','evening'],['river','lake'],['candle','lantern'],['bridge','tunnel']];
+    return fb[Math.floor(Math.random()*fb.length)];
+  }
+}
+
+function showRevealFor(idx){
+  const p=G.players[idx];
+  const isLast=idx===G.players.length-1;
+  $('reveal-eyebrow').textContent='Player '+(idx+1)+' of '+G.players.length;
+  $('reveal-name-header').textContent=p.name;
+  $('reveal-instruction').textContent='Tap when ready to see your role — keep it secret!';
+  $('reveal-btn').style.display='block';
+  $('reveal-next-btn').style.display='none';
+  $('reveal-next-btn').textContent=isLast?'All done — start game!':'Done — pass to next player ›';
+  const rc=$('reveal-content');
+  rc.classList.add('blurred');rc.classList.remove('revealed');
+  if(p.role==='evil'){
+    const partner=G.players.find(q=>q.role==='evil'&&q.name!==p.name);
+    rc.innerHTML=`<div class="role-evil"><div class="eyebrow" style="color:rgba(255,255,255,0.6);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:0;">Work your word naturally into conversation. Find your partner — they carry the other word.</p><div class="password-box"><div style="font-size:11px;opacity:0.65;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Your secret word</div><div class="password-word">${p.word}</div><div style="font-size:13px;margin-top:6px;opacity:0.8;">Your partner: ${partner?partner.name:'?'} &nbsp;·&nbsp; Their word: <strong>${partner?partner.word:'?'}</strong></div></div></div>`;
+  }else{
+    rc.innerHTML=`<div class="role-good"><div class="eyebrow" style="color:rgba(255,255,255,0.6);">Your role</div><div class="role-label">You are Good</div><p style="font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:0;">Two players are hiding secret words in conversation to find each other. Listen carefully. Trust your instincts.</p><div class="password-box"><div style="font-size:11px;opacity:0.65;text-transform:uppercase;letter-spacing:0.1em;">No password assigned.</div><div style="font-size:14px;margin-top:4px;opacity:0.85;">Find the evil pair.</div></div></div>`;
+  }
+}
+
+function revealRole(){
+  $('reveal-content').classList.add('revealed');
+  $('reveal-btn').style.display='none';
+  $('reveal-next-btn').style.display='block';
+}
+
+function nextReveal(){
+  G.revealIndex++;
+  if(G.revealIndex>=G.players.length){enterDiscussion();}
+  else{showRevealFor(G.revealIndex);}
+}
+
+function enterDiscussion(){
+  G.votes={};G.votingOpen=false;
+  $('disc-round').textContent=G.round;
+  $('host-vote-controls').style.display=G.isHost?'block':'none';
+  if(G.isHost){
+    $('open-vote-btn').style.display='block';$('close-vote-btn').style.display='none';
+    $('vote-dot').className='status-dot dot-closed';$('vote-status-text').textContent='Voting closed';
+    $('votes-cast-count').textContent='0 votes cast';
+  }
+  const me=G.players.find(p=>p.name===G.myName);
+  if(me&&!G.isHost){
+    const rc=$('reminder-content');
+    if(me.role==='evil'){
+      const partner=G.players.find(p=>p.role==='evil'&&p.name!==me.name);
+      rc.innerHTML=`<div style="background:var(--evil-light);border:1px solid rgba(139,32,32,0.15);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:0.5rem;"><span class="badge badge-evil">Evil</span><div style="font-size:13px;color:var(--evil);margin-top:6px;">Your word: <strong>${me.word}</strong> &nbsp;·&nbsp; ${partner?partner.name:'Partner'}: <strong>${partner?partner.word:'?'}</strong></div></div>`;
+    }else{
+      rc.innerHTML=`<div style="background:var(--good-light);border:1px solid rgba(26,74,46,0.15);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:0.5rem;"><span class="badge badge-good">Good</span><div style="font-size:13px;color:var(--good);margin-top:4px;">Listen for the hidden words.</div></div>`;
+    }
+    $('player-role-reminder').style.display='block';
+  }else{$('player-role-reminder').style.display='none';}
+  $('disc-chips').innerHTML=activePlayers().map(p=>`<span class="chip"><span class="dot"></span>${p.name}</span>`).join('');
+  show('s-discussion');
+}
+
+function openVoting(){
+  G.votingOpen=true;G.votes={};
+  $('open-vote-btn').style.display='none';$('close-vote-btn').style.display='block';
+  $('vote-dot').className='status-dot dot-open';$('vote-status-text').textContent='Voting open';
+  renderVoting();show('s-voting');
+}
+
+function renderVoting(){
+  const me=G.players.find(p=>p.name===G.myName);
+  const eliminated=me&&me.eliminated;
+  if(eliminated){
+    $('vote-list').innerHTML=`<div class="card" style="text-align:center;color:var(--ink2);">You have been eliminated — you may watch but cannot vote.</div>`;
+    $('voting-sub').textContent='Waiting for the result…';
+    return;
+  }
+  $('voting-sub').textContent='Tap your suspect. You can change your vote until the host closes it.';
+  const myVote=G.votes[G.myName]||null;
+  $('vote-list').innerHTML=activePlayers().map(p=>{
+    const isMe=p.name===G.myName;
+    const sel=myVote===p.name;
+    const vc=Object.values(G.votes).filter(v=>v===p.name).length;
+    return`<button class="vote-btn${isMe?' is-me':''}${sel?' selected':''}" onclick="castVote('${p.name}')"><span>${p.name}${isMe?' (you)':''}</span><span style="font-size:12px;opacity:0.6;">${vc>0?vc+' vote'+(vc!==1?'s':''):''}</span></button>`;
+  }).join('');
+}
+
+function castVote(target){
+  if(!G.votingOpen)return;
+  const me=G.players.find(p=>p.name===G.myName);
+  if(me&&me.eliminated)return;
+  G.votes[G.myName]=target;
+  renderVoting();
+  const cast=Object.keys(G.votes).length;
+  if(G.isHost)$('votes-cast-count').textContent=cast+' vote'+(cast!==1?'s':'')+' cast';
+}
+
+function closeVoting(){
+  G.votingOpen=false;
+  showVoteResult();
+}
+
+function showVoteResult(){
+  $('result-round-label').textContent='Round '+G.round+' result';
+  const tally={};
+  activePlayers().forEach(p=>{tally[p.name]=0;});
+  Object.values(G.votes).forEach(v=>{if(tally[v]!==undefined)tally[v]++;});
+  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  const maxV=sorted[0]?sorted[0][1]:0;
+  $('result-bars').innerHTML=sorted.map(([name,count])=>`<div class="result-row"><span class="result-name">${name}</span><div class="result-bar-wrap"><div class="result-bar" style="width:${maxV>0?(count/maxV*100):0}%"></div></div><span class="result-votes">${count}</span></div>`).join('');
+  const elName=sorted[0]?sorted[0][0]:null;
+  const elPlayer=elName?G.players.find(p=>p.name===elName):null;
+  if(elPlayer)elPlayer.eliminated=true;
+  $('eliminated-name').textContent=elName||'Nobody';
+  const isEvil=elPlayer&&elPlayer.role==='evil';
+  $('eliminated-role-reveal').textContent=elPlayer?(isEvil?'Was evil — their word was "'+elPlayer.word+'"':'Was good — an innocent lost'):'';
+  $('eliminated-card').style.background=isEvil?'var(--evil)':'#555';
+  $('game-continues').style.display='none';$('game-over-trigger').style.display='none';
+  const ae=activeEvil().length,ag=activeGood().length;
+  if(ae===0){G.winnerSide='good';$('game-over-trigger').style.display='block';}
+  else if(ae>=ag){G.winnerSide='evil';$('game-over-trigger').style.display='block';}
+  else{G.winnerSide=null;$('game-continues').style.display='block';$('continues-text').textContent=ag+' good vs '+ae+' evil remaining. Discuss and vote again.';}
+  G.round++;
+  show('s-vote-result');
+}
+
+function continueGame(){enterDiscussion();}
+
+function showWinScreen(){
+  const wb=$('win-banner');
+  wb.className='win-banner '+(G.winnerSide==='good'?'win-good':'win-evil');
+  $('win-title').textContent=G.winnerSide==='good'?'Good wins!':'Evil wins!';
+  $('win-subtitle').textContent=G.winnerSide==='good'?'Both evil players were unmasked.':'The evil pair survived and now outnumber the good.';
+  const evils=G.players.filter(p=>p.role==='evil');
+  $('evil-reveal-chips').innerHTML=evils.map(p=>`<span class="chip" style="background:var(--evil-light);border-color:rgba(139,32,32,0.2);color:var(--evil);">${p.name}</span>`).join('');
+  $('win-passwords').textContent='"'+G.words[0]+'" & "'+G.words[1]+'"';
+  $('win-player-list').innerHTML=G.players.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--parchment3);"><span style="font-weight:500;">${p.name}</span><span><span class="badge ${p.role==='evil'?'badge-evil':'badge-good'}">${p.role}</span>${p.eliminated?' <span class="badge badge-out">out</span>':''}</span></div>`).join('');
+  show('s-win');
+}
+
+function resetGame(){
+  Object.assign(G,{isHost:false,myName:'',room:'',players:[],words:['',''],round:1,votes:{},votingOpen:false,revealIndex:0,winnerSide:null});
+  $('host-name').value='';$('join-name').value='';$('join-code').value='';
+  $('start-btn').textContent='Start the council';$('start-btn').style.opacity='0.4';$('start-btn').style.pointerEvents='none';
+  setMode('host');show('s-landing');
 }
 </script>
 </body>
