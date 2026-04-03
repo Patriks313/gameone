@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 1.4b
+     SHADOW COUNCIL · Version: 1.5
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -532,7 +532,7 @@ async function onResult(g){
     $('eliminated-role-reveal').textContent=ep.role==='evil'?'Was evil — their word was "'+ep.word+'"':'Was good — an innocent lost';
   } else {
     $('eliminated-name').textContent=eliminated.join(' & ');
-    $('eliminated-role-reveal').textContent='Tied vote — all eliminated. '+elPlayers.map(p=>p.name+(p.role==='evil'?' (evil, word: "'+p.word+'")'):'(good)').join(', ');
+    $('eliminated-role-reveal').textContent='Tied vote — all eliminated. '+elPlayers.map(p=>p.name+(p.role==='evil'?' (evil, word: "'+p.word+'")':" (good)")).join(', ');
   }
 
   const eliminatedNames = new Set(eliminated);
