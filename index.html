@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
      SHADOW COUNCIL
-     Version: 0.9e
+     Version: 0.9f
      Change the number above when releasing a new version.
      The page reads it automatically — no other edits needed.
 ═══════════════════════════════ -->
@@ -342,14 +342,21 @@ async function hostGame(){
   $('host-err').textContent='';
   $('host-btn').textContent='Creating…'; $('host-btn').disabled=true;
   L.isHost=true; L.myName=name; L.room=genCode();
-  await set(gref('games/'+L.room), {
-    status:'lobby', host:name, round:1,
-    players:{ [name]:{name,role:'',eliminated:false,word:'',ready:false} },
-    votes:{}, votingOpen:false, words:['',''], createdAt:Date.now()
-  });
-  $('display-code').textContent=L.room;
-  listenToGame();
-  show('s-host-lobby');
+  try {
+    $('host-err').textContent='Connecting to Firebase…';
+    await set(gref('games/'+L.room), {
+      status:'lobby', host:name, round:1,
+      players:{ [name]:{name,role:'',eliminated:false,word:'',ready:false} },
+      votes:{}, votingOpen:false, words:['',''], createdAt:Date.now()
+    });
+    $('host-err').textContent='';
+    $('display-code').textContent=L.room;
+    listenToGame();
+    show('s-host-lobby');
+  } catch(e) {
+    $('host-err').textContent='Firebase error: '+e.message;
+    $('host-btn').textContent='Create game room'; $('host-btn').disabled=false;
+  }
 }
 
 // ── JOIN GAME ──────────────────────────────
