@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!-- ═══════════════════════════════
+     SHADOW COUNCIL
+     Version: 0.9
+     Change the number above when releasing a new version.
+     The page reads it automatically — no other edits needed.
+═══════════════════════════════ -->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -115,7 +121,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   </div>
   <div class="spacer"></div>
   <p style="font-size:11px;color:var(--ink3);padding-bottom:1rem;text-align:center;">Shadow Council · real-time multiplayer</p>
-  <p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;">v0.8</p>
+  <p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;" id="version-tag"></p>
 </div>
 
 <!-- HOST LOBBY -->
@@ -259,6 +265,11 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div class="spacer"></div>
 </div>
 
+<script>
+// Read version from the top comment and display it
+const m = document.documentElement.outerHTML.match(/Version:\s*([\d.]+)/);
+if(m) document.getElementById('version-tag').textContent = 'v' + m[1];
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
