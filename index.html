@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 2.1
+     SHADOW COUNCIL · Version: 2.2
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -378,31 +378,41 @@ function onLobby(g){
 }
 
 async function startGame(){
-  $('start-btn').textContent='Generating…';$('start-btn').disabled=true;
-  const snap=await get(gref('games/'+L.room));
-  const g=snap.val();
-  const ps=Object.values(g.players);
-  const sh=[...ps].sort(()=>Math.random()-0.5);
-  const e1=sh[0].name,e2=sh[1].name;
-  const pair=generatePasswords();
-  const playerUpdates={};
-  ps.forEach(p=>{
-    playerUpdates[p.name]={
-      name:p.name,
-      role:p.name===e1||p.name===e2?'evil':'good',
-      word:p.name===e1?pair[0]:p.name===e2?pair[1]:'',
-      eliminated:false,
-      ready:false
-    };
-  });
-  await update(gref('games/'+L.room),{
-    players:playerUpdates,
-    words:pair,
-    status:'reveal',
-    round:1,
-    votes:{},
-    votingOpen:false
-  });
+  const btn=$('start-btn');
+  btn.textContent='Starting…';btn.disabled=true;
+  try{
+    btn.textContent='Reading players…';
+    const snap=await get(gref('games/'+L.room));
+    const g=snap.val();
+    const ps=Object.values(g.players);
+    const sh=[...ps].sort(()=>Math.random()-0.5);
+    const e1=sh[0].name,e2=sh[1].name;
+    const pair=generatePasswords();
+    const playerUpdates={};
+    ps.forEach(p=>{
+      playerUpdates[p.name]={
+        name:p.name,
+        role:p.name===e1||p.name===e2?'evil':'good',
+        word:p.name===e1?pair[0]:p.name===e2?pair[1]:'',
+        eliminated:false,
+        ready:false
+      };
+    });
+    btn.textContent='Writing to Firebase…';
+    await update(gref('games/'+L.room),{
+      players:playerUpdates,
+      words:pair,
+      status:'reveal',
+      round:1,
+      votes:{},
+      votingOpen:false
+    });
+    btn.textContent='Done!';
+  }catch(e){
+    btn.textContent='Error — tap to retry';
+    btn.disabled=false;
+    $('player-hint').textContent='Error: '+e.message;
+  }
 }
 
 function generatePasswords(){
