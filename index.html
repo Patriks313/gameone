@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
      SHADOW COUNCIL
-     Version: 0.9h
+     Version: 1.0
      Change the number above when releasing a new version.
      The page reads it automatically — no other edits needed.
 ═══════════════════════════════ -->
@@ -603,7 +603,6 @@ async function continueToDiscussion(){
 function handleGameOver(g){
   const players = Object.values(g.players||{});
   const evils = players.filter(p=>p.role==='evil');
-  const allEvilElim = evils.every(p=>p.eliminated);
   const allEvilElim = evils.every(p=>p.eliminated);
   $('win-banner').className = 'win-banner win-neutral';
   $('win-title').textContent = allEvilElim ? 'Good wins!' : 'Evil wins!';
