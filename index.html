@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 2.6
+     SHADOW COUNCIL · Version: 2.7
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -395,23 +395,23 @@ async function startGame(){
     const e1=sh[0].name,e2=sh[1].name;
     const pair=generatePasswords();
     btn.textContent='Writing to Firebase…';
-    // Update each player individually — avoids overwriting entire players object
-    for(const p of ps){
-      await update(gref('games/'+L.room+'/players/'+p.name),{
-        role:p.name===e1||p.name===e2?'evil':'good',
-        word:p.name===e1?pair[0]:p.name===e2?pair[1]:'',
-        eliminated:false,
-        ready:false
-      });
-    }
-    // Set game state last — this triggers the listener on all phones
-    await update(gref('games/'+L.room),{
+    // One atomic update — all player roles + status in a single write
+    // This means the listener fires exactly once with complete data
+    const allUpdates={
       words:pair,
       status:'reveal',
       round:1,
       votes:{},
-      votingOpen:false
+      votingOpen:false,
+      readyForNext:{}
+    };
+    ps.forEach(p=>{
+      allUpdates['players/'+p.name+'/role']=p.name===e1||p.name===e2?'evil':'good';
+      allUpdates['players/'+p.name+'/word']=p.name===e1?pair[0]:p.name===e2?pair[1]:'';
+      allUpdates['players/'+p.name+'/eliminated']=false;
+      allUpdates['players/'+p.name+'/ready']=false;
     });
+    await update(gref('games/'+L.room), allUpdates);
     btn.textContent='Done!';
   }catch(e){
     btn.textContent='Error — tap to retry';
@@ -435,14 +435,10 @@ function generatePasswords(){
 function onReveal(g){
   if($('s-role-reveal').classList.contains('active'))return;
   const me=g.players[L.myName];
-  if(!me){
-    // Show debug — player not found in game data
-    $('player-hint') && ($('player-hint').textContent='Waiting… (my name: '+L.myName+', players: '+Object.keys(g.players||{}).join(',')+')');
-    // Try anyway after short delay
-    setTimeout(()=>{
-      const snap2=g.players[L.myName];
-      if(!snap2) show('s-role-reveal'); // show blank reveal if still missing
-    },2000);
+  if(!me||!me.role){
+    // Player data not ready yet — listener will fire again when it is
+    const pd=$('player-debug');
+    if(pd) pd.textContent='Waiting for role… ('+L.myName+')';
     return;
   }
   const rc=$('reveal-content');
