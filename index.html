@@ -265,11 +265,6 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div class="spacer"></div>
 </div>
 
-<script>
-// Read version from the top comment and display it
-const m = document.documentElement.outerHTML.match(/Version:\s*([\d.]+)/);
-if(m) document.getElementById('version-tag').textContent = 'v' + m[1];
-</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -314,6 +309,10 @@ $('continue-btn').addEventListener('click', continueToDiscussion);
 $('see-result-btn').addEventListener('click', ()=>show('s-win'));
 $('play-again-btn').addEventListener('click', resetGame);
 $('back-to-start-btn').addEventListener('click', resetGame);
+
+// Set version display from top comment
+const vm = document.documentElement.outerHTML.match(/Version:\s*([\d.]+)/);
+if(vm) $('version-tag').textContent = 'v' + vm[1];
 
 // ── TABS ───────────────────────────────────
 function setMode(m){
