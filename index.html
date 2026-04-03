@@ -39,8 +39,8 @@ input[type=text]:focus{border-color:var(--ink);background:#fff;}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:500;background:var(--parchment2);border:1px solid var(--parchment3);color:var(--ink);}
 .chip .dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;flex-shrink:0;}
 .room-code{font-family:'Cormorant Garamond',serif;font-size:4.5rem;font-weight:600;letter-spacing:0.25em;color:var(--ink);text-align:center;line-height:1;}
-.role-evil{background:var(--evil);color:#fff;border-radius:var(--radius);padding:1.6rem;width:100%;margin-bottom:1rem;}
-.role-good{background:var(--good);color:#fff;border-radius:var(--radius);padding:1.6rem;width:100%;margin-bottom:1rem;}
+.role-card{background:var(--ink);color:var(--parchment);border-radius:var(--radius);padding:1.6rem;width:100%;margin-bottom:1rem;}
+
 .role-label{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;margin-bottom:0.5rem;}
 .password-box{background:rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:0.9rem 1rem;margin-top:0.8rem;}
 .password-word{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;}
@@ -52,10 +52,10 @@ input[type=text]:focus{border-color:var(--ink);background:#fff;}
 .result-bar-wrap{flex:1;background:var(--parchment2);border-radius:4px;height:8px;overflow:hidden;}
 .result-bar{height:8px;border-radius:4px;background:var(--evil);transition:width 0.8s ease;}
 .result-votes{font-size:13px;color:var(--ink2);min-width:24px;text-align:right;}
-.eliminated-card{color:#fff;border-radius:var(--radius);padding:1.4rem;text-align:center;width:100%;margin-bottom:1rem;}
+.eliminated-card{background:var(--ink);color:var(--parchment);border-radius:var(--radius);padding:1.4rem;text-align:center;width:100%;margin-bottom:1rem;}
 .eliminated-name{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;}
 .win-banner{border-radius:var(--radius);padding:2rem 1.4rem;text-align:center;width:100%;margin-bottom:1rem;color:#fff;}
-.win-good{background:var(--good);}.win-evil{background:var(--evil);}
+.win-neutral{background:var(--ink);}
 .win-title{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:600;margin-bottom:0.3rem;}
 .rule-block{border-left:3px solid var(--gold);padding-left:1rem;margin-bottom:1.2rem;}
 .badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;}
@@ -115,7 +115,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   </div>
   <div class="spacer"></div>
   <p style="font-size:11px;color:var(--ink3);padding-bottom:1rem;text-align:center;">Shadow Council · real-time multiplayer</p>
-  <p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;">v0.6b</p>
+  <p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;">v0.8</p>
 </div>
 
 <!-- HOST LOBBY -->
@@ -422,10 +422,9 @@ function handleReveal(g){
   $('reveal-btn').style.display='block';
   $('reveal-done-btn').style.display='none';
   if(me.role==='evil'){
-    const partner = Object.values(g.players).find(p=>p.role==='evil'&&p.name!==L.myName);
-    rc.innerHTML=`<div class="role-evil"><div class="eyebrow" style="color:rgba(255,255,255,0.6);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:0;">Work your word naturally into conversation. Find your partner — they carry the other word.</p><div class="password-box"><div style="font-size:11px;opacity:0.65;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Your secret word</div><div class="password-word">${me.word}</div><div style="font-size:13px;margin-top:6px;opacity:0.85;">Partner: ${partner?partner.name:'?'} &nbsp;·&nbsp; Their word: <strong>${partner?partner.word:'?'}</strong></div></div></div>`;
+    rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Work your secret word naturally into conversation. Another player is also evil — find them without revealing yourself.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Your secret word</div><div class="password-word">${me.word}</div><div style="font-size:13px;margin-top:6px;opacity:0.75;">The other evil player has a related word. Listen carefully.</div></div></div>`;
   } else {
-    rc.innerHTML=`<div class="role-good"><div class="eyebrow" style="color:rgba(255,255,255,0.6);">Your role</div><div class="role-label">You are Good</div><p style="font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:0;">Two players are hiding secret words in conversation. Listen carefully and find them before it's too late.</p><div class="password-box"><div style="font-size:11px;opacity:0.65;text-transform:uppercase;letter-spacing:0.1em;">No password assigned.</div><div style="font-size:14px;margin-top:4px;opacity:0.85;">Trust your instincts.</div></div></div>`;
+    rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Good</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Two players are hiding secret words in conversation. Listen carefully and find them before it's too late.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;">No secret word.</div><div style="font-size:14px;margin-top:4px;opacity:0.75;">Trust your instincts.</div></div></div>`;
   }
   show('s-role-reveal');
 }
@@ -450,11 +449,10 @@ function handleDiscussion(g){
   }
   const me = g.players[L.myName];
   if(me&&me.role==='evil'){
-    const partner = Object.values(g.players).find(p=>p.role==='evil'&&p.name!==L.myName);
-    $('reminder-content').innerHTML=`<div style="background:var(--evil-light);border:1px solid rgba(139,32,32,0.15);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:0.5rem;"><span class="badge badge-evil">Evil</span><div style="font-size:13px;color:var(--evil);margin-top:6px;">Your word: <strong>${me.word}</strong> &nbsp;·&nbsp; ${partner?partner.name:'Partner'}: <strong>${partner?partner.word:'?'}</strong></div></div>`;
+    $('reminder-content').innerHTML=`<div style="background:var(--parchment2);border:1px solid var(--parchment3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:0.5rem;"><div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Your secret word</div><div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--ink);">${me.word}</div></div>`;
     $('role-reminder').style.display='block';
   } else if(me){
-    $('reminder-content').innerHTML=`<div style="background:var(--good-light);border:1px solid rgba(26,74,46,0.15);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:0.5rem;"><span class="badge badge-good">Good</span><div style="font-size:13px;color:var(--good);margin-top:4px;">Listen for the hidden words.</div></div>`;
+    $('reminder-content').innerHTML=`<div style="background:var(--parchment2);border:1px solid var(--parchment3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:0.5rem;"><div style="font-size:13px;color:var(--ink2);">Listen carefully for the hidden words.</div></div>`;
     $('role-reminder').style.display='block';
   }
   if(!$('s-discussion').classList.contains('active')) show('s-discussion');
@@ -542,17 +540,19 @@ async function handleResult(g){
   $('eliminated-name').textContent = elName||'Nobody';
   const isEvil = elPlayer&&elPlayer.role==='evil';
   $('eliminated-role-reveal').textContent = elPlayer?(isEvil?'Was evil — their word was "'+elPlayer.word+'"':'Was good — an innocent lost'):'';
-  $('eliminated-card').style.background = isEvil?'var(--evil)':'#555';
+
   const activeEvil = players.filter(p=>p.role==='evil'&&p.name!==elName&&!p.eliminated).length;
   const activeGood = players.filter(p=>p.role==='good'&&p.name!==elName&&!p.eliminated).length;
+  const totalRemaining = activeEvil + activeGood;
   $('game-continues').style.display='none'; $('game-over-trigger').style.display='none';
-  const gameOver = (isEvil&&activeEvil===0)||(activeEvil>=activeGood);
+  // Game ends only when the last evil player is voted out
+  const gameOver = isEvil && activeEvil === 0;
   if(gameOver){
     $('game-over-trigger').style.display='block';
     if(L.isHost) await update(gref('games/'+L.room), {status:'gameover', ['players/'+elName+'/eliminated']:true});
   } else {
     $('game-continues').style.display='block';
-    $('continues-text').textContent=activeGood+' good vs '+activeEvil+' evil remaining.';
+    $('continues-text').textContent=activeGood+' good vs '+activeEvil+' evil remaining. '+totalRemaining+' players left.';
     $('continue-btn').style.display=L.isHost?'block':'none';
     if(L.isHost) await update(gref('games/'+L.room+'/players/'+elName), {eliminated:true});
   }
@@ -570,10 +570,11 @@ function handleGameOver(g){
   const players = Object.values(g.players||{});
   const evils = players.filter(p=>p.role==='evil');
   const allEvilElim = evils.every(p=>p.eliminated);
-  $('win-banner').className = 'win-banner '+(allEvilElim?'win-good':'win-evil');
-  $('win-title').textContent = allEvilElim?'Good wins!':'Evil wins!';
-  $('win-subtitle').textContent = allEvilElim?'Both evil players were unmasked.':'The evil pair survived and outnumber the good.';
-  $('evil-reveal-chips').innerHTML = evils.map(p=>`<span class="chip" style="background:var(--evil-light);border-color:rgba(139,32,32,0.2);color:var(--evil);">${p.name}</span>`).join('');
+  const allEvilElim = evils.every(p=>p.eliminated);
+  $('win-banner').className = 'win-banner win-neutral';
+  $('win-title').textContent = allEvilElim ? 'Good wins!' : 'Evil wins!';
+  $('win-subtitle').textContent = allEvilElim ? 'Both evil players have been unmasked.' : 'The evil pair survived.';
+  $('evil-reveal-chips').innerHTML = evils.map(p=>`<span class="chip">${p.name}</span>`).join('');
   $('win-passwords').textContent = '"'+(g.words[0]||'?')+'" & "'+(g.words[1]||'?')+'"';
   $('win-player-list').innerHTML = players.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--parchment3);"><span style="font-weight:500;">${p.name}</span><span><span class="badge ${p.role==='evil'?'badge-evil':'badge-good'}">${p.role}</span>${p.eliminated?' <span class="badge badge-out">out</span>':''}</span></div>`).join('');
   if(!$('s-win').classList.contains('active')) show('s-win');
