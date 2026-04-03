@@ -73,13 +73,9 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 .ornament{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold);text-align:center;margin:0.4rem 0;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .spinner{width:26px;height:26px;border:2px solid var(--parchment3);border-top-color:var(--ink);border-radius:50%;animation:spin 0.8s linear infinite;margin:1rem auto;}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--parchment);padding:10px 20px;border-radius:999px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
-.toast.show{opacity:1;}
-.cancelled-screen{text-align:center;padding:2rem 1rem;}
 </style>
 </head>
 <body>
-<div id="toast" class="toast"></div>
 
 <!-- LANDING -->
 <div class="screen active" id="s-landing">
@@ -88,14 +84,14 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <h1 style="margin-bottom:0.5rem;">Shadow<br/>Council</h1>
   <p class="sub" style="margin-top:0.6rem;">A game of trust, deception,<br/>and hidden words.</p>
   <div class="tabs">
-    <button class="tab active" id="tab-host" onclick="setMode('host')">Host game</button>
-    <button class="tab" id="tab-join" onclick="setMode('join')">Join game</button>
-    <button class="tab" id="tab-rules" onclick="setMode('rules')">Rules</button>
+    <button class="tab active" id="tab-host">Host game</button>
+    <button class="tab" id="tab-join">Join game</button>
+    <button class="tab" id="tab-rules">Rules</button>
   </div>
   <div id="form-host" style="width:100%">
     <div class="card">
       <div class="field-row"><div class="field-label">Your name</div><input type="text" id="host-name" placeholder="Enter your name" maxlength="20" autocomplete="off"/></div>
-      <button class="btn btn-primary" id="host-btn" onclick="hostGame()">Create game room</button>
+      <button class="btn btn-primary" id="host-btn">Create game room</button>
       <div class="error" id="host-err"></div>
     </div>
   </div>
@@ -103,7 +99,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
     <div class="card">
       <div class="field-row"><div class="field-label">Room code</div><input type="text" id="join-code" placeholder="4-digit code" maxlength="4" autocomplete="off" style="letter-spacing:0.25em;font-size:22px;text-align:center;font-family:'Cormorant Garamond',serif;font-weight:600;"/></div>
       <div class="field-row"><div class="field-label">Your name</div><input type="text" id="join-name" placeholder="Enter your name" maxlength="20" autocomplete="off"/></div>
-      <button class="btn btn-primary" id="join-btn" onclick="joinGame()">Join the council</button>
+      <button class="btn btn-primary" id="join-btn">Join the council</button>
       <div class="error" id="join-err"></div>
     </div>
   </div>
@@ -111,7 +107,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
     <div class="card">
       <h3 style="margin-bottom:1rem;">How to play</h3>
       <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The setup</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">The host creates a room and shares a 4-digit code. Everyone joins on their own phone. When the host starts, two players are secretly chosen as Evil.</div></div>
-      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The evil pair</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Evil players receive a secret password — one word each from a pair (e.g. "salt" and "pepper"). They know both words and who carries which. They must find each other through conversation without being caught.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The evil pair</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Evil players receive a secret password — one word each from a pair. They know both words and who carries which, and must find each other through conversation without being caught.</div></div>
       <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The good players</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Good players only know they are not evil. Listen carefully — the evil pair will try to slip their passwords into natural conversation to signal each other.</div></div>
       <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Voting</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">When the host opens voting, everyone taps who they suspect on their own phone. The host closes voting and everyone sees the result simultaneously.</div></div>
       <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Winning</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;"><strong>Good wins</strong> when both evil players are eliminated. <strong>Evil wins</strong> when evil players equal or outnumber the good players remaining.</div></div>
@@ -119,7 +115,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   </div>
   <div class="spacer"></div>
   <p style="font-size:11px;color:var(--ink3);padding-bottom:1rem;text-align:center;">Shadow Council · real-time multiplayer</p>
-  <p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;">v0.3</p>
+  <p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;">v0.4</p>
 </div>
 
 <!-- HOST LOBBY -->
@@ -139,8 +135,8 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   </div>
   <hr/>
   <p style="font-size:13px;color:var(--ink2);margin-bottom:10px;text-align:center;">Minimum 4 players needed (2 will be evil)</p>
-  <button class="btn btn-primary" id="start-btn" style="opacity:0.4;pointer-events:none;" onclick="startGame()">Start the council</button>
-  <button class="btn btn-danger" style="margin-top:8px;" onclick="cancelGame()">Cancel game</button>
+  <button class="btn btn-primary" id="start-btn" style="opacity:0.4;pointer-events:none;">Start the council</button>
+  <button class="btn btn-danger" id="cancel-lobby-btn" style="margin-top:8px;">Cancel game</button>
 </div>
 
 <!-- PLAYER WAITING -->
@@ -164,10 +160,10 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 <div class="screen" id="s-role-reveal">
   <div class="eyebrow" style="margin-top:0.5rem;">Your role</div>
   <h2 style="margin-bottom:0.3rem;">Role assigned</h2>
-  <p class="sub">This is private — only you can see this screen.<br/>Tap to reveal.</p>
+  <p class="sub">This is private — only you can see this.<br/>Tap to reveal.</p>
   <div id="reveal-content" class="blurred" style="width:100%;"></div>
-  <button class="btn btn-ghost" id="reveal-btn" onclick="revealRole()" style="margin-top:0.5rem;">Tap to reveal my role</button>
-  <button class="btn btn-primary" id="reveal-done-btn" onclick="goToDiscussion()" style="display:none;margin-top:0.5rem;">I've read it — continue</button>
+  <button class="btn btn-ghost" id="reveal-btn" style="margin-top:0.5rem;">Tap to reveal my role</button>
+  <button class="btn btn-primary" id="reveal-done-btn" style="display:none;margin-top:0.5rem;">I've read it — continue</button>
   <div class="spacer"></div>
 </div>
 
@@ -180,9 +176,9 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
     <div class="card">
       <div class="section-header" style="margin-top:0;">Host controls</div>
       <div class="status-bar"><span><span class="status-dot dot-closed" id="vote-dot"></span><span id="vote-status-text">Voting closed</span></span><span id="votes-cast-count" style="color:var(--ink2);">0 votes cast</span></div>
-      <button class="btn btn-primary" id="open-vote-btn" onclick="openVoting()">Open voting</button>
-      <button class="btn btn-evil" id="close-vote-btn" onclick="closeVoting()" style="display:none;margin-top:8px;">Close voting &amp; show result</button>
-      <button class="btn btn-danger" onclick="cancelGame()" style="margin-top:8px;">End game</button>
+      <button class="btn btn-primary" id="open-vote-btn">Open voting</button>
+      <button class="btn btn-evil" id="close-vote-btn" style="display:none;margin-top:8px;">Close voting &amp; show result</button>
+      <button class="btn btn-danger" id="end-game-btn" style="margin-top:8px;">End game</button>
     </div>
   </div>
   <div id="role-reminder" style="width:100%;display:none;"><div id="reminder-content"></div></div>
@@ -214,10 +210,10 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   </div>
   <div id="game-continues" style="width:100%;display:none;">
     <div class="card" style="text-align:center;"><p style="font-size:14px;color:var(--ink2);" id="continues-text">Game continues.</p></div>
-    <button class="btn btn-primary" id="continue-btn" onclick="continueToDiscussion()" style="display:none;">Continue to next round</button>
+    <button class="btn btn-primary" id="continue-btn" style="display:none;">Continue to next round</button>
   </div>
   <div id="game-over-trigger" style="width:100%;display:none;">
-    <button class="btn btn-gold" onclick="goToWinScreen()">See final result ✦</button>
+    <button class="btn btn-gold" id="see-result-btn">See final result ✦</button>
   </div>
   <div class="spacer"></div>
 </div>
@@ -238,7 +234,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
     <div class="section-header">All players</div>
     <div id="win-player-list"></div>
   </div>
-  <button class="btn btn-primary" style="margin-top:1rem;" onclick="resetGame()">Play again</button>
+  <button class="btn btn-primary" id="play-again-btn" style="margin-top:1rem;">Play again</button>
   <div class="spacer"></div>
 </div>
 
@@ -248,13 +244,13 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div class="ornament">✦</div>
   <h2 style="margin-bottom:0.5rem;">Game ended</h2>
   <p class="sub">The host has ended the game.</p>
-  <button class="btn btn-primary" onclick="resetGame()">Back to start</button>
+  <button class="btn btn-primary" id="back-to-start-btn">Back to start</button>
   <div class="spacer"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, update, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAYghIMXjI2wmREEgyiVubCC83WhF3_I40",
@@ -269,8 +265,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ── LOCAL STATE ────────────────────────────
-const L = { isHost:false, myName:'', room:'', myRole:'', myWord:'', partnerName:'', partnerWord:'' };
+const L = { isHost:false, myName:'', room:'' };
 let gameListener = null;
 
 // ── UTILS ──────────────────────────────────
@@ -278,47 +273,62 @@ const $ = id => document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
 function genCode(){ return String(Math.floor(1000+Math.random()*9000)); }
 function gref(path){ return ref(db, path); }
-function showToast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
+// ── WIRE UP ALL BUTTONS HERE (no onclick in HTML) ──────────────────────────
+$('tab-host').addEventListener('click', ()=>setMode('host'));
+$('tab-join').addEventListener('click', ()=>setMode('join'));
+$('tab-rules').addEventListener('click', ()=>setMode('rules'));
+$('host-btn').addEventListener('click', hostGame);
+$('join-btn').addEventListener('click', joinGame);
+$('start-btn').addEventListener('click', startGame);
+$('cancel-lobby-btn').addEventListener('click', cancelGame);
+$('reveal-btn').addEventListener('click', revealRole);
+$('reveal-done-btn').addEventListener('click', goToDiscussion);
+$('open-vote-btn').addEventListener('click', openVoting);
+$('close-vote-btn').addEventListener('click', closeVoting);
+$('end-game-btn').addEventListener('click', cancelGame);
+$('continue-btn').addEventListener('click', continueToDiscussion);
+$('see-result-btn').addEventListener('click', ()=>show('s-win'));
+$('play-again-btn').addEventListener('click', resetGame);
+$('back-to-start-btn').addEventListener('click', resetGame);
+
+// ── TABS ───────────────────────────────────
 function setMode(m){
   ['host','join','rules'].forEach(t=>{
-    $('tab-'+t).classList.toggle('active',t===m);
-    $('form-'+t).style.display=t===m?'block':'none';
+    $('tab-'+t).classList.toggle('active', t===m);
+    $('form-'+t).style.display = t===m ? 'block' : 'none';
   });
 }
-window.setMode = setMode;
 
 // ── HOST GAME ──────────────────────────────
 async function hostGame(){
-  const name=$('host-name').value.trim();
-  if(!name){$('host-err').textContent='Please enter your name';return;}
+  const name = $('host-name').value.trim();
+  if(!name){ $('host-err').textContent='Please enter your name'; return; }
   $('host-err').textContent='';
-  $('host-btn').textContent='Creating…';
-  $('host-btn').style.opacity='0.6';
+  $('host-btn').textContent='Creating…'; $('host-btn').disabled=true;
   L.isHost=true; L.myName=name; L.room=genCode();
   await set(gref('games/'+L.room), {
     status:'lobby', host:name, round:1,
     players:{ [name]:{name,role:'',eliminated:false,word:'',ready:false} },
-    votes:{}, votingOpen:false, words:['',''], createdAt: Date.now()
+    votes:{}, votingOpen:false, words:['',''], createdAt:Date.now()
   });
   $('display-code').textContent=L.room;
   listenToGame();
   show('s-host-lobby');
 }
-window.hostGame = hostGame;
 
 // ── JOIN GAME ──────────────────────────────
 async function joinGame(){
   const code=$('join-code').value.trim(), name=$('join-name').value.trim();
-  if(!/^\d{4}$/.test(code)){$('join-err').textContent='Enter the 4-digit room code';return;}
-  if(!name){$('join-err').textContent='Please enter your name';return;}
+  if(!/^\d{4}$/.test(code)){ $('join-err').textContent='Enter the 4-digit room code'; return; }
+  if(!name){ $('join-err').textContent='Please enter your name'; return; }
   $('join-err').textContent='';
-  $('join-btn').textContent='Joining…';$('join-btn').style.opacity='0.6';
+  $('join-btn').textContent='Joining…'; $('join-btn').disabled=true;
   const snap = await get(gref('games/'+code));
-  if(!snap.exists()){$('join-err').textContent='Room not found. Check the code.';$('join-btn').textContent='Join the council';$('join-btn').style.opacity='1';return;}
-  const g=snap.val();
-  if(g.status!=='lobby'){$('join-err').textContent='This game has already started.';$('join-btn').textContent='Join the council';$('join-btn').style.opacity='1';return;}
-  if(g.players&&g.players[name]){$('join-err').textContent='That name is already taken.';$('join-btn').textContent='Join the council';$('join-btn').style.opacity='1';return;}
+  if(!snap.exists()){ $('join-err').textContent='Room not found. Check the code.'; $('join-btn').textContent='Join the council'; $('join-btn').disabled=false; return; }
+  const g = snap.val();
+  if(g.status!=='lobby'){ $('join-err').textContent='This game has already started.'; $('join-btn').textContent='Join the council'; $('join-btn').disabled=false; return; }
+  if(g.players&&g.players[name]){ $('join-err').textContent='That name is already taken in this room.'; $('join-btn').textContent='Join the council'; $('join-btn').disabled=false; return; }
   L.isHost=false; L.myName=name; L.room=code;
   await update(gref('games/'+code+'/players'), { [name]:{name,role:'',eliminated:false,word:'',ready:false} });
   $('player-joined-name').textContent=name;
@@ -326,15 +336,14 @@ async function joinGame(){
   listenToGame();
   show('s-player-wait');
 }
-window.joinGame = joinGame;
 
-// ── LISTEN TO GAME ─────────────────────────
+// ── FIREBASE LISTENER ──────────────────────
 function listenToGame(){
-  if(gameListener) gameListener();
+  if(gameListener){ gameListener(); gameListener=null; }
   gameListener = onValue(gref('games/'+L.room), snap=>{
-    if(!snap.exists()){handleCancelled();return;}
-    const g=snap.val();
-    if(g.status==='cancelled'){handleCancelled();return;}
+    if(!snap.exists()){ handleCancelled(); return; }
+    const g = snap.val();
+    if(g.status==='cancelled'){ handleCancelled(); return; }
     if(g.status==='lobby') handleLobby(g);
     else if(g.status==='reveal') handleReveal(g);
     else if(g.status==='discussion') handleDiscussion(g);
@@ -346,95 +355,90 @@ function listenToGame(){
 
 // ── LOBBY ──────────────────────────────────
 function handleLobby(g){
-  const players=Object.values(g.players||{});
-  const chips=$('lobby-chips');
-  if(chips) chips.innerHTML=players.map(p=>`<span class="chip"><span class="dot"></span>${p.name}${p.name===g.host?' (host)':''}</span>`).join('');
-  const hint=$('player-hint');
-  if(hint) hint.textContent=players.length+' player'+(players.length!==1?'s':'')+' in room';
-  const btn=$('start-btn');
-  if(btn){ const ok=players.length>=4; btn.style.opacity=ok?'1':'0.4'; btn.style.pointerEvents=ok?'auto':'none'; }
+  const players = Object.values(g.players||{});
+  $('lobby-chips').innerHTML = players.map(p=>`<span class="chip"><span class="dot"></span>${p.name}${p.name===g.host?' (host)':''}</span>`).join('');
+  $('player-hint').textContent = players.length+' player'+(players.length!==1?'s':'')+' in room';
+  const ok = players.length>=4;
+  $('start-btn').style.opacity = ok?'1':'0.4';
+  $('start-btn').style.pointerEvents = ok?'auto':'none';
 }
 
-// ── START GAME ─────────────────────────────
+// ── START ──────────────────────────────────
 async function startGame(){
-  $('start-btn').textContent='Generating…';$('start-btn').style.opacity='0.6';
-  const snap=await get(gref('games/'+L.room));
-  const g=snap.val();
-  const players=Object.values(g.players);
-  const shuffled=[...players].sort(()=>Math.random()-0.5);
+  $('start-btn').textContent='Generating…'; $('start-btn').disabled=true;
+  const snap = await get(gref('games/'+L.room));
+  const g = snap.val();
+  const players = Object.values(g.players);
+  const shuffled = [...players].sort(()=>Math.random()-0.5);
   const evil1=shuffled[0].name, evil2=shuffled[1].name;
-  const pair=await generatePasswords();
-  const updates={};
+  const pair = await generatePasswords();
+  const updates = {};
   players.forEach(p=>{
-    const role=p.name===evil1||p.name===evil2?'evil':'good';
-    const word=p.name===evil1?pair[0]:p.name===evil2?pair[1]:'';
-    updates['games/'+L.room+'/players/'+p.name+'/role']=role;
-    updates['games/'+L.room+'/players/'+p.name+'/word']=word;
+    const isEvil = p.name===evil1||p.name===evil2;
+    updates['games/'+L.room+'/players/'+p.name+'/role'] = isEvil?'evil':'good';
+    updates['games/'+L.room+'/players/'+p.name+'/word'] = p.name===evil1?pair[0]:p.name===evil2?pair[1]:'';
   });
-  updates['games/'+L.room+'/words']=pair;
-  updates['games/'+L.room+'/status']='reveal';
-  updates['games/'+L.room+'/round']=1;
-  updates['games/'+L.room+'/votes']={};
-  updates['games/'+L.room+'/votingOpen']=false;
+  updates['games/'+L.room+'/words'] = pair;
+  updates['games/'+L.room+'/status'] = 'reveal';
+  updates['games/'+L.room+'/round'] = 1;
+  updates['games/'+L.room+'/votes'] = {};
+  updates['games/'+L.room+'/votingOpen'] = false;
   await update(gref('/'), updates);
 }
-window.startGame = startGame;
 
-// ── PASSWORDS ─────────────────────────────
+// ── PASSWORDS ──────────────────────────────
 async function generatePasswords(){
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:100,messages:[{role:'user',content:'Generate a pair of related everyday words for a social deduction game where players must slip the words into normal conversation naturally. Reply ONLY with JSON: {"word1":"salt","word2":"pepper"} — no explanation, no markdown.'}]})});
-    const d=await r.json();
-    const txt=d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-    const p=JSON.parse(txt);return[p.word1,p.word2];
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:100,messages:[{role:'user',content:'Generate a pair of related everyday words for a social deduction game where players must slip the words into normal conversation. Reply ONLY with JSON: {"word1":"salt","word2":"pepper"} — no markdown, no explanation.'}]})});
+    const d = await r.json();
+    const txt = d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const p = JSON.parse(txt);
+    return [p.word1, p.word2];
   }catch(e){
     const fb=[['north','south'],['mountain','valley'],['anchor','compass'],['silver','copper'],['morning','evening'],['candle','lantern'],['bridge','tunnel'],['feather','stone']];
     return fb[Math.floor(Math.random()*fb.length)];
   }
 }
 
-// ── ROLE REVEAL ───────────────────────────
+// ── ROLE REVEAL ────────────────────────────
 function handleReveal(g){
   if($('s-role-reveal').classList.contains('active')) return;
-  const me=g.players[L.myName];
+  const me = g.players[L.myName];
   if(!me) return;
-  L.myRole=me.role; L.myWord=me.word;
-  const rc=$('reveal-content');
+  const rc = $('reveal-content');
   rc.classList.add('blurred'); rc.classList.remove('revealed');
   $('reveal-btn').style.display='block';
   $('reveal-done-btn').style.display='none';
   if(me.role==='evil'){
-    const partner=Object.values(g.players).find(p=>p.role==='evil'&&p.name!==L.myName);
-    L.partnerName=partner?partner.name:''; L.partnerWord=partner?partner.word:'';
-    rc.innerHTML=`<div class="role-evil"><div class="eyebrow" style="color:rgba(255,255,255,0.6);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:0;">Work your word naturally into conversation. Find your partner — they carry the other word.</p><div class="password-box"><div style="font-size:11px;opacity:0.65;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Your secret word</div><div class="password-word">${me.word}</div><div style="font-size:13px;margin-top:6px;opacity:0.85;">Partner: ${L.partnerName} &nbsp;·&nbsp; Their word: <strong>${L.partnerWord}</strong></div></div></div>`;
-  }else{
-    L.partnerName=''; L.partnerWord='';
+    const partner = Object.values(g.players).find(p=>p.role==='evil'&&p.name!==L.myName);
+    rc.innerHTML=`<div class="role-evil"><div class="eyebrow" style="color:rgba(255,255,255,0.6);">Your role</div><div class="role-label">You are Evil</div><p style="font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:0;">Work your word naturally into conversation. Find your partner — they carry the other word.</p><div class="password-box"><div style="font-size:11px;opacity:0.65;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Your secret word</div><div class="password-word">${me.word}</div><div style="font-size:13px;margin-top:6px;opacity:0.85;">Partner: ${partner?partner.name:'?'} &nbsp;·&nbsp; Their word: <strong>${partner?partner.word:'?'}</strong></div></div></div>`;
+  } else {
     rc.innerHTML=`<div class="role-good"><div class="eyebrow" style="color:rgba(255,255,255,0.6);">Your role</div><div class="role-label">You are Good</div><p style="font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:0;">Two players are hiding secret words in conversation. Listen carefully and find them before it's too late.</p><div class="password-box"><div style="font-size:11px;opacity:0.65;text-transform:uppercase;letter-spacing:0.1em;">No password assigned.</div><div style="font-size:14px;margin-top:4px;opacity:0.85;">Trust your instincts.</div></div></div>`;
   }
   show('s-role-reveal');
 }
 
 function revealRole(){ $('reveal-content').classList.add('revealed'); $('reveal-btn').style.display='none'; $('reveal-done-btn').style.display='block'; }
-window.revealRole = revealRole;
 
-async function goToDiscussion(){ await update(gref('games/'+L.room+'/players/'+L.myName),{ready:true}); }
-window.goToDiscussion = goToDiscussion;
+async function goToDiscussion(){
+  await update(gref('games/'+L.room+'/players/'+L.myName), {ready:true});
+  await update(gref('games/'+L.room), {status:'discussion'});
+}
 
-// ── DISCUSSION ────────────────────────────
+// ── DISCUSSION ─────────────────────────────
 function handleDiscussion(g){
-  $('disc-round').textContent=g.round||1;
-  const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
-  $('disc-chips').innerHTML=active.map(p=>`<span class="chip"><span class="dot"></span>${p.name}</span>`).join('');
-  $('host-controls').style.display=L.isHost?'block':'none';
+  $('disc-round').textContent = g.round||1;
+  const active = Object.values(g.players||{}).filter(p=>!p.eliminated);
+  $('disc-chips').innerHTML = active.map(p=>`<span class="chip"><span class="dot"></span>${p.name}</span>`).join('');
+  $('host-controls').style.display = L.isHost?'block':'none';
   if(L.isHost){
     $('open-vote-btn').style.display='block'; $('close-vote-btn').style.display='none';
     $('vote-dot').className='status-dot dot-closed'; $('vote-status-text').textContent='Voting closed';
-    const vc=Object.keys(g.votes||{}).length;
-    $('votes-cast-count').textContent=vc+' vote'+(vc!==1?'s':'')+' cast';
+    $('votes-cast-count').textContent=Object.keys(g.votes||{}).length+' votes cast';
   }
-  const me=g.players[L.myName];
+  const me = g.players[L.myName];
   if(me&&me.role==='evil'){
-    const partner=Object.values(g.players).find(p=>p.role==='evil'&&p.name!==L.myName);
+    const partner = Object.values(g.players).find(p=>p.role==='evil'&&p.name!==L.myName);
     $('reminder-content').innerHTML=`<div style="background:var(--evil-light);border:1px solid rgba(139,32,32,0.15);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:0.5rem;"><span class="badge badge-evil">Evil</span><div style="font-size:13px;color:var(--evil);margin-top:6px;">Your word: <strong>${me.word}</strong> &nbsp;·&nbsp; ${partner?partner.name:'Partner'}: <strong>${partner?partner.word:'?'}</strong></div></div>`;
     $('role-reminder').style.display='block';
   } else if(me){
@@ -447,122 +451,112 @@ function handleDiscussion(g){
 async function openVoting(){
   $('open-vote-btn').style.display='none'; $('close-vote-btn').style.display='block';
   $('vote-dot').className='status-dot dot-open'; $('vote-status-text').textContent='Voting open';
-  await update(gref('games/'+L.room),{status:'voting',votingOpen:true,votes:{}});
+  await update(gref('games/'+L.room), {status:'voting', votingOpen:true, votes:{}});
 }
-window.openVoting = openVoting;
 
 async function closeVoting(){
-  await update(gref('games/'+L.room),{votingOpen:false,status:'result'});
+  await update(gref('games/'+L.room), {votingOpen:false, status:'result'});
 }
-window.closeVoting = closeVoting;
 
-// ── VOTING ────────────────────────────────
+// ── VOTING ─────────────────────────────────
 function handleVoting(g){
-  const me=g.players[L.myName];
-  const isElim=me&&me.eliminated;
-  const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
-  const myVote=(g.votes||{})[L.myName]||null;
+  const me = g.players[L.myName];
+  const isElim = me&&me.eliminated;
+  const active = Object.values(g.players||{}).filter(p=>!p.eliminated);
+  const myVote = (g.votes||{})[L.myName]||null;
   if(isElim){
     $('voting-sub').textContent='You have been eliminated — you may watch but not vote.';
     $('vote-list').innerHTML=`<div class="card" style="text-align:center;color:var(--ink2);">Watching the vote…</div>`;
   } else {
     $('voting-sub').textContent='Tap your suspect. You can change your vote until the host closes it.';
-    $('vote-list').innerHTML=active.map(p=>{
-      const isMe=p.name===L.myName;
-      const sel=myVote===p.name;
-      const vc=Object.values(g.votes||{}).filter(v=>v===p.name).length;
-      return`<button class="vote-btn${isMe?' is-me':''}${sel?' selected':''}" onclick="castVote('${p.name}')"><span>${p.name}${isMe?' (you)':''}</span><span style="font-size:12px;opacity:0.6;">${vc>0?vc+' vote'+(vc!==1?'s':''):''}</span></button>`;
+    $('vote-list').innerHTML = active.map(p=>{
+      const isMe = p.name===L.myName;
+      const sel = myVote===p.name;
+      const vc = Object.values(g.votes||{}).filter(v=>v===p.name).length;
+      return `<button class="vote-btn${isMe?' is-me':''}${sel?' selected':''}" data-target="${p.name}"><span>${p.name}${isMe?' (you)':''}</span><span style="font-size:12px;opacity:0.6;">${vc>0?vc+' vote'+(vc!==1?'s':''):''}</span></button>`;
     }).join('');
+    $('vote-list').querySelectorAll('.vote-btn:not(.is-me)').forEach(btn=>{
+      btn.addEventListener('click', ()=>castVote(btn.dataset.target));
+    });
   }
-  if(L.isHost){
-    const vc=Object.keys(g.votes||{}).length;
-    $('votes-cast-count').textContent=vc+' vote'+(vc!==1?'s':'')+' cast';
-  }
+  if(L.isHost) $('votes-cast-count').textContent=Object.keys(g.votes||{}).length+' votes cast';
   if(!$('s-voting').classList.contains('active')) show('s-voting');
 }
 
 async function castVote(target){
-  await update(gref('games/'+L.room+'/votes'),{[L.myName]:target});
+  await update(gref('games/'+L.room+'/votes'), {[L.myName]:target});
 }
-window.castVote = castVote;
 
-// ── RESULT ────────────────────────────────
+// ── RESULT ─────────────────────────────────
 async function handleResult(g){
-  const players=Object.values(g.players||{});
-  const tally={};
+  const players = Object.values(g.players||{});
+  const tally = {};
   players.filter(p=>!p.eliminated).forEach(p=>{tally[p.name]=0;});
   Object.values(g.votes||{}).forEach(v=>{if(tally[v]!==undefined)tally[v]++;});
-  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
-  const maxV=sorted[0]?sorted[0][1]:0;
+  const sorted = Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  const maxV = sorted[0]?sorted[0][1]:0;
   $('result-round-label').textContent='Round '+(g.round||1)+' result';
-  $('result-bars').innerHTML=sorted.map(([name,count])=>`<div class="result-row"><span class="result-name">${name}</span><div class="result-bar-wrap"><div class="result-bar" style="width:${maxV>0?(count/maxV*100):0}%"></div></div><span class="result-votes">${count}</span></div>`).join('');
-  const elName=sorted[0]?sorted[0][0]:null;
-  const elPlayer=players.find(p=>p.name===elName);
-  $('eliminated-name').textContent=elName||'Nobody';
-  const isEvil=elPlayer&&elPlayer.role==='evil';
-  $('eliminated-role-reveal').textContent=elPlayer?(isEvil?'Was evil — their word was "'+elPlayer.word+'"':'Was good — an innocent lost'):'';
-  $('eliminated-card').style.background=isEvil?'var(--evil)':'#555';
-  const activeEvil=players.filter(p=>p.role==='evil'&&p.name!==elName&&!p.eliminated).length;
-  const isLastEvil=isEvil&&activeEvil===0;
-  const activeGood=players.filter(p=>p.role==='good'&&p.name!==elName&&!p.eliminated).length;
+  $('result-bars').innerHTML = sorted.map(([name,count])=>`<div class="result-row"><span class="result-name">${name}</span><div class="result-bar-wrap"><div class="result-bar" style="width:${maxV>0?(count/maxV*100):0}%"></div></div><span class="result-votes">${count}</span></div>`).join('');
+  const elName = sorted[0]?sorted[0][0]:null;
+  const elPlayer = players.find(p=>p.name===elName);
+  $('eliminated-name').textContent = elName||'Nobody';
+  const isEvil = elPlayer&&elPlayer.role==='evil';
+  $('eliminated-role-reveal').textContent = elPlayer?(isEvil?'Was evil — their word was "'+elPlayer.word+'"':'Was good — an innocent lost'):'';
+  $('eliminated-card').style.background = isEvil?'var(--evil)':'#555';
+  const activeEvil = players.filter(p=>p.role==='evil'&&p.name!==elName&&!p.eliminated).length;
+  const activeGood = players.filter(p=>p.role==='good'&&p.name!==elName&&!p.eliminated).length;
   $('game-continues').style.display='none'; $('game-over-trigger').style.display='none';
-  if(isLastEvil||(!isEvil&&activeEvil===0)){
+  const gameOver = (isEvil&&activeEvil===0)||(activeEvil>=activeGood);
+  if(gameOver){
     $('game-over-trigger').style.display='block';
-    if(L.isHost) await update(gref('games/'+L.room),{status:'gameover','players/'+elName+'/eliminated':true});
-  } else if(isEvil && activeEvil>=activeGood){
-    $('game-over-trigger').style.display='block';
-    if(L.isHost) await update(gref('games/'+L.room),{status:'gameover','players/'+elName+'/eliminated':true});
+    if(L.isHost) await update(gref('games/'+L.room), {status:'gameover', ['players/'+elName+'/eliminated']:true});
   } else {
-    $('game-continues').style.display='block'; $('continues-text').textContent=activeGood+' good vs '+activeEvil+' evil remaining.';
+    $('game-continues').style.display='block';
+    $('continues-text').textContent=activeGood+' good vs '+activeEvil+' evil remaining.';
     $('continue-btn').style.display=L.isHost?'block':'none';
-    if(L.isHost) await update(gref('games/'+L.room+'/players/'+elName),{eliminated:true});
+    if(L.isHost) await update(gref('games/'+L.room+'/players/'+elName), {eliminated:true});
   }
   if(!$('s-vote-result').classList.contains('active')) show('s-vote-result');
 }
 
 async function continueToDiscussion(){
-  const snap=await get(gref('games/'+L.room));
-  const g=snap.val();
-  await update(gref('games/'+L.room),{status:'discussion',votingOpen:false,votes:{},round:(g.round||1)+1});
+  const snap = await get(gref('games/'+L.room));
+  const g = snap.val();
+  await update(gref('games/'+L.room), {status:'discussion', votingOpen:false, votes:{}, round:(g.round||1)+1});
 }
-window.continueToDiscussion = continueToDiscussion;
 
-// ── GAME OVER ─────────────────────────────
+// ── GAME OVER ──────────────────────────────
 function handleGameOver(g){
-  const players=Object.values(g.players||{});
-  const evils=players.filter(p=>p.role==='evil');
-  const allEvilElim=evils.every(p=>p.eliminated);
-  const wb=$('win-banner');
-  wb.className='win-banner '+(allEvilElim?'win-good':'win-evil');
-  $('win-title').textContent=allEvilElim?'Good wins!':'Evil wins!';
-  $('win-subtitle').textContent=allEvilElim?'Both evil players were unmasked.':'The evil pair survived and outnumber the good.';
-  $('evil-reveal-chips').innerHTML=evils.map(p=>`<span class="chip" style="background:var(--evil-light);border-color:rgba(139,32,32,0.2);color:var(--evil);">${p.name}</span>`).join('');
-  $('win-passwords').textContent='"'+(g.words[0]||'?')+'" & "'+(g.words[1]||'?')+'"';
-  $('win-player-list').innerHTML=players.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--parchment3);"><span style="font-weight:500;">${p.name}</span><span><span class="badge ${p.role==='evil'?'badge-evil':'badge-good'}">${p.role}</span>${p.eliminated?' <span class="badge badge-out">out</span>':''}</span></div>`).join('');
+  const players = Object.values(g.players||{});
+  const evils = players.filter(p=>p.role==='evil');
+  const allEvilElim = evils.every(p=>p.eliminated);
+  $('win-banner').className = 'win-banner '+(allEvilElim?'win-good':'win-evil');
+  $('win-title').textContent = allEvilElim?'Good wins!':'Evil wins!';
+  $('win-subtitle').textContent = allEvilElim?'Both evil players were unmasked.':'The evil pair survived and outnumber the good.';
+  $('evil-reveal-chips').innerHTML = evils.map(p=>`<span class="chip" style="background:var(--evil-light);border-color:rgba(139,32,32,0.2);color:var(--evil);">${p.name}</span>`).join('');
+  $('win-passwords').textContent = '"'+(g.words[0]||'?')+'" & "'+(g.words[1]||'?')+'"';
+  $('win-player-list').innerHTML = players.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--parchment3);"><span style="font-weight:500;">${p.name}</span><span><span class="badge ${p.role==='evil'?'badge-evil':'badge-good'}">${p.role}</span>${p.eliminated?' <span class="badge badge-out">out</span>':''}</span></div>`).join('');
   if(!$('s-win').classList.contains('active')) show('s-win');
 }
-window.goToWinScreen = function(){ show('s-win'); }
 
-// ── CANCEL ────────────────────────────────
+// ── CANCEL / RESET ─────────────────────────
 async function cancelGame(){
   if(!confirm('End the game for everyone?')) return;
-  if(gameListener){gameListener();gameListener=null;}
-  await update(gref('games/'+L.room),{status:'cancelled'});
+  if(gameListener){ gameListener(); gameListener=null; }
+  await update(gref('games/'+L.room), {status:'cancelled'});
   show('s-cancelled');
 }
-window.cancelGame = cancelGame;
 
 function handleCancelled(){
-  if(gameListener){gameListener();gameListener=null;}
+  if(gameListener){ gameListener(); gameListener=null; }
   if(!$('s-cancelled').classList.contains('active')) show('s-cancelled');
 }
 
-// ── RESET ─────────────────────────────────
 function resetGame(){
-  if(gameListener){gameListener();gameListener=null;}
+  if(gameListener){ gameListener(); gameListener=null; }
   window.location.reload();
 }
-window.resetGame = resetGame;
+
 </script>
 </body>
 </html>
