@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
      SHADOW COUNCIL
-     Version: 0.9
+     Version: 0.9d
      Change the number above when releasing a new version.
      The page reads it automatically — no other edits needed.
 ═══════════════════════════════ -->
@@ -290,6 +290,16 @@ const $ = id => document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
 function genCode(){ return String(Math.floor(1000+Math.random()*9000)); }
 function gref(path){ return ref(db, path); }
+
+// ── GLOBAL ERROR CATCHER ───────────────────────────
+window.onerror = (msg, src, line) => {
+  const b = document.getElementById('err-banner');
+  if(b){ b.textContent = 'Error line '+line+': '+msg; b.style.display='block'; }
+};
+window.addEventListener('unhandledrejection', e => {
+  const b = document.getElementById('err-banner');
+  if(b){ b.textContent = 'Promise error: '+(e.reason?.message||e.reason); b.style.display='block'; }
+});
 
 // ── WIRE UP ALL BUTTONS HERE (no onclick in HTML) ──────────────────────────
 $('tab-host').addEventListener('click', ()=>setMode('host'));
