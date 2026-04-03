@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 1.4
+     SHADOW COUNCIL · Version: 1.4b
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -556,7 +556,7 @@ async function onResult(g){
     $('game-continues').style.display='block';
     $('continues-text').textContent=remainGood+' good vs '+remainEvil+' evil still in the game.';
     $('continue-btn').style.display='block';
-    $('continue-btn').textContent="I\'m ready — continue";
+    $('continue-btn').textContent="I'm ready — continue";
   }
   // Update ready count if already on result screen
   updateReadyCount(g);
@@ -573,7 +573,7 @@ function updateReadyCount(g){
     btn.textContent='Waiting for others… ('+readyCount+'/'+active.length+')';
     btn.disabled=true; btn.style.opacity='0.5';
   } else {
-    btn.textContent="I\'m ready — continue";
+    btn.textContent="I'm ready — continue";
     btn.disabled=false; btn.style.opacity='1';
   }
 }
