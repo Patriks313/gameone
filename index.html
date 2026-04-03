@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 3.3
+     SHADOW COUNCIL · Version: 3.4
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -518,7 +518,7 @@ function onVoting(g){
   }
   $('voting-sub').textContent=voteCount+' of '+voterCount+' voted — tap your suspect';
 
-  const myVote=votes[L.myName]||null;
+  const myVote=votes['v_'+L.myName]||null;
   const isFinalRound=active.length<=2;
   const canVote=!(me&&me.eliminated)||isFinalRound;
 
@@ -534,7 +534,7 @@ function onVoting(g){
       return`<button class="vote-btn${isMe?' is-me':''}${sel?' selected':''}" data-t="${p.name}"><span>${p.name}</span>${sel?'<span style="font-size:12px;opacity:0.6;">your vote</span>':''}</button>`;
     }).join('');
     $('vote-list').querySelectorAll('.vote-btn:not(.is-me)').forEach(b=>{
-      b.addEventListener('click',()=>update(gref('games/'+L.room+'/votes'),{[L.myName]:b.dataset.t}));
+      b.addEventListener('click',()=>update(gref('games/'+L.room+'/votes'),{['v_'+L.myName]:b.dataset.t}));
     });
   }
   if(!$('s-voting').classList.contains('active'))show('s-voting');
@@ -551,7 +551,7 @@ async function onResult(g){
   // Tally votes
   const tally={};
   players.filter(p=>!p.eliminated).forEach(p=>{tally[p.name]=0;});
-  Object.values(g.votes||{}).forEach(v=>{if(tally[v]!==undefined)tally[v]++;});
+  Object.values(g.votes||{}).forEach(v=>{if(v&&tally[v]!==undefined)tally[v]++;});
   const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
   const maxV=sorted[0]?sorted[0][1]:0;
   $('result-round-label').textContent='Round '+thisRound+' result';
