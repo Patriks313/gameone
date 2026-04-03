@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 1.2d
+     SHADOW COUNCIL · Version: 1.4
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -217,7 +217,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   </div>
   <div id="game-continues" style="width:100%;display:none;">
     <div class="card" style="text-align:center;"><p style="font-size:14px;color:var(--ink2);" id="continues-text">Game continues.</p></div>
-    <button class="btn btn-primary" id="continue-btn" style="display:none;">Continue to next round</button>
+    <button class="btn btn-primary" id="continue-btn" style="display:none;">I'm ready — continue</button>
   </div>
   <div id="game-over-trigger" style="width:100%;display:none;">
     <button class="btn btn-gold" id="see-result-btn">See final result ✦</button>
@@ -363,7 +363,7 @@ function listenToGame(){
     else if(g.status==='reveal')onReveal(g);
     else if(g.status==='discussion')onDiscussion(g);
     else if(g.status==='voting')onVoting(g);
-    else if(g.status==='result')onResult(g);
+    else if(g.status==='result'){onResult(g);updateReadyCount(g);if(L.isHost)checkAllReady(g);}
     else if(g.status==='gameover')onGameOver(g);
   });
 }
@@ -519,40 +519,81 @@ async function onResult(g){
   const maxV=sorted[0]?sorted[0][1]:0;
   $('result-round-label').textContent='Round '+(g.round||1)+' result';
   $('result-bars').innerHTML=sorted.map(([name,count])=>`<div class="result-row"><span class="result-name">${name}</span><div class="result-bar-wrap"><div class="result-bar" style="width:${maxV>0?(count/maxV*100):0}%"></div></div><span class="result-votes">${count}</span></div>`).join('');
-  const elName=sorted[0]?sorted[0][0]:null;
-  const elPlayer=players.find(p=>p.name===elName);
-  $('eliminated-name').textContent=elName||'Nobody';
-  const isEvil=elPlayer&&elPlayer.role==='evil';
-  $('eliminated-role-reveal').textContent=elPlayer?(isEvil?'Was evil — their word was "'+elPlayer.word+'"':'Was good — an innocent lost'):'';
-  const remainEvil=players.filter(p=>p.role==='evil'&&p.name!==elName&&!p.eliminated).length;
-  const remainGood=players.filter(p=>p.role==='good'&&p.name!==elName&&!p.eliminated).length;
-  $('game-continues').style.display='none';$('game-over-trigger').style.display='none';
-  // Host does one atomic write: eliminate player + set next status together
-  if(L.isHost){
-    if(isEvil&&remainEvil===0){
-      await update(gref('games/'+L.room),{
-        ['players/'+elName+'/eliminated']: true,
-        status: 'gameover'
-      });
-    } else {
-      await update(gref('games/'+L.room+'/players/'+elName),{eliminated:true});
-    }
+  // All players tied at the top get eliminated
+  const eliminated = maxV > 0 ? sorted.filter(([,c])=>c===maxV).map(([n])=>n) : [];
+  const elPlayers = eliminated.map(n=>players.find(p=>p.name===n)).filter(Boolean);
+
+  if(eliminated.length===0){
+    $('eliminated-name').textContent='No votes cast — no elimination';
+    $('eliminated-role-reveal').textContent='';
+  } else if(eliminated.length===1){
+    $('eliminated-name').textContent=eliminated[0];
+    const ep=elPlayers[0];
+    $('eliminated-role-reveal').textContent=ep.role==='evil'?'Was evil — their word was "'+ep.word+'"':'Was good — an innocent lost';
+  } else {
+    $('eliminated-name').textContent=eliminated.join(' & ');
+    $('eliminated-role-reveal').textContent='Tied vote — all eliminated. '+elPlayers.map(p=>p.name+(p.role==='evil'?' (evil, word: "'+p.word+'")'):'(good)').join(', ');
   }
 
-  if(isEvil&&remainEvil===0){
+  const eliminatedNames = new Set(eliminated);
+  const remainEvil = players.filter(p=>p.role==='evil'&&!eliminatedNames.has(p.name)&&!p.eliminated).length;
+  const remainGood = players.filter(p=>p.role==='good'&&!eliminatedNames.has(p.name)&&!p.eliminated).length;
+  $('game-continues').style.display='none';
+  $('game-over-trigger').style.display='none';
+
+  const gameOver = eliminated.length>0 && remainEvil===0;
+
+  if(L.isHost && eliminated.length>0){
+    const u={};
+    eliminated.forEach(n=>{ u['games/'+L.room+'/players/'+n+'/eliminated']=true; });
+    if(gameOver) u['games/'+L.room+'/status']='gameover';
+    await update(gref('/'), u);
+  }
+
+  if(gameOver){
     $('game-over-trigger').style.display='block';
   }else{
     $('game-continues').style.display='block';
     $('continues-text').textContent=remainGood+' good vs '+remainEvil+' evil still in the game.';
-    $('continue-btn').style.display=L.isHost?'block':'none';
+    $('continue-btn').style.display='block';
+    $('continue-btn').textContent="I\'m ready — continue";
   }
+  // Update ready count if already on result screen
+  updateReadyCount(g);
   show('s-vote-result');
 }
 
+function updateReadyCount(g){
+  const btn=$('continue-btn');
+  if(!btn||btn.style.display==='none')return;
+  const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
+  const readyCount=Object.keys(g.readyForNext||{}).length;
+  const myReady=(g.readyForNext||{})[L.myName];
+  if(myReady){
+    btn.textContent='Waiting for others… ('+readyCount+'/'+active.length+')';
+    btn.disabled=true; btn.style.opacity='0.5';
+  } else {
+    btn.textContent="I\'m ready — continue";
+    btn.disabled=false; btn.style.opacity='1';
+  }
+}
+
 async function continueRound(){
-  const snap=await get(gref('games/'+L.room));
-  const g=snap.val();
-  await update(gref('games/'+L.room),{status:'discussion',votingOpen:false,votes:{},round:(g.round||1)+1});
+  // Mark this player as ready for next round
+  await update(gref('games/'+L.room+'/readyForNext'),{[L.myName]:true});
+}
+
+async function checkAllReady(g){
+  // Called by host only — advance when all active (non-eliminated) players are ready
+  const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
+  const ready=Object.keys(g.readyForNext||{});
+  const allReady=active.every(p=>ready.includes(p.name));
+  if(allReady){
+    await update(gref('games/'+L.room),{
+      status:'discussion',votingOpen:false,votes:{},
+      readyForNext:{},round:(g.round||1)+1
+    });
+  }
 }
 
 function onGameOver(g){
