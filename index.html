@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 2.0
+     SHADOW COUNCIL · Version: 2.1
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -385,17 +385,24 @@ async function startGame(){
   const sh=[...ps].sort(()=>Math.random()-0.5);
   const e1=sh[0].name,e2=sh[1].name;
   const pair=generatePasswords();
-  const u={};
+  const playerUpdates={};
   ps.forEach(p=>{
-    u['games/'+L.room+'/players/'+p.name+'/role']=p.name===e1||p.name===e2?'evil':'good';
-    u['games/'+L.room+'/players/'+p.name+'/word']=p.name===e1?pair[0]:p.name===e2?pair[1]:'';
+    playerUpdates[p.name]={
+      name:p.name,
+      role:p.name===e1||p.name===e2?'evil':'good',
+      word:p.name===e1?pair[0]:p.name===e2?pair[1]:'',
+      eliminated:false,
+      ready:false
+    };
   });
-  u['games/'+L.room+'/words']=pair;
-  u['games/'+L.room+'/status']='reveal';
-  u['games/'+L.room+'/round']=1;
-  u['games/'+L.room+'/votes']={};
-  u['games/'+L.room+'/votingOpen']=false;
-  await update(gref('/'),u);
+  await update(gref('games/'+L.room),{
+    players:playerUpdates,
+    words:pair,
+    status:'reveal',
+    round:1,
+    votes:{},
+    votingOpen:false
+  });
 }
 
 function generatePasswords(){
@@ -553,10 +560,11 @@ async function onResult(g){
   const gameOver = eliminated.length>0 && remainEvil===0;
 
   if(L.isHost && eliminated.length>0){
-    const u={};
-    eliminated.forEach(n=>{ u['games/'+L.room+'/players/'+n+'/eliminated']=true; });
-    if(gameOver) u['games/'+L.room+'/status']='gameover';
-    await update(gref('/'), u);
+    const playerElimUpdates={};
+    eliminated.forEach(n=>{ playerElimUpdates[n]={...Object.values(g.players).find(p=>p.name===n),eliminated:true}; });
+    const resultUpdate={players:{...g.players,...playerElimUpdates}};
+    if(gameOver) resultUpdate.status='gameover';
+    await update(gref('games/'+L.room), resultUpdate);
   }
 
   if(gameOver){
