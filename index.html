@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 1.1
+     SHADOW COUNCIL · Version: 1.2
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -502,7 +502,6 @@ function onVoting(g){
 }
 
 async function onResult(g){
-  if($('s-vote-result').classList.contains('active'))return;
   const players=Object.values(g.players||{});
   const tally={};
   players.filter(p=>!p.eliminated).forEach(p=>{tally[p.name]=0;});
@@ -519,15 +518,21 @@ async function onResult(g){
   const remainEvil=players.filter(p=>p.role==='evil'&&p.name!==elName&&!p.eliminated).length;
   const remainGood=players.filter(p=>p.role==='good'&&p.name!==elName&&!p.eliminated).length;
   $('game-continues').style.display='none';$('game-over-trigger').style.display='none';
-  // Always eliminate the player first
-  if(L.isHost) await update(gref('games/'+L.room+'/players/'+elName),{eliminated:true});
+  // Host does one atomic write: eliminate player + set next status together
+  if(L.isHost){
+    if(isEvil&&remainEvil===0){
+      await update(gref('games/'+L.room),{
+        ['players/'+elName+'/eliminated']: true,
+        status: 'gameover'
+      });
+    } else {
+      await update(gref('games/'+L.room+'/players/'+elName),{eliminated:true});
+    }
+  }
 
   if(isEvil&&remainEvil===0){
-    // Last evil eliminated — good wins
     $('game-over-trigger').style.display='block';
-    if(L.isHost) await update(gref('games/'+L.room),{status:'gameover'});
   }else{
-    // Game continues regardless of numbers — keep voting until all evil found
     $('game-continues').style.display='block';
     $('continues-text').textContent=remainGood+' good vs '+remainEvil+' evil still in the game.';
     $('continue-btn').style.display=L.isHost?'block':'none';
@@ -542,6 +547,7 @@ async function continueRound(){
 }
 
 function onGameOver(g){
+  // This fires when host sets status=gameover — show win screen for everyone
   const players=Object.values(g.players||{});
   const evils=players.filter(p=>p.role==='evil');
   const allOut=evils.every(p=>p.eliminated);
