@@ -559,11 +559,7 @@ function handleCancelled(){
 // ── RESET ─────────────────────────────────
 function resetGame(){
   if(gameListener){gameListener();gameListener=null;}
-  Object.assign(L,{isHost:false,myName:'',room:'',myRole:'',myWord:'',partnerName:'',partnerWord:''});
-  $('host-name').value=''; $('join-name').value=''; $('join-code').value='';
-  $('host-btn').textContent='Create game room'; $('host-btn').style.opacity='1';
-  $('start-btn').textContent='Start the council'; $('start-btn').style.opacity='0.4'; $('start-btn').style.pointerEvents='none';
-  setMode('host'); show('s-landing');
+  window.location.reload();
 }
 window.resetGame = resetGame;
 </script>
