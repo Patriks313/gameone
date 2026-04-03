@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 2.7
+     SHADOW COUNCIL · Version: 2.9
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -365,6 +365,7 @@ function listenToGame(){
     const pd=$('player-debug');
     if(pd) pd.textContent='Status: '+g.status+' | Me: "'+L.myName+'" | Players: '+Object.keys(g.players||{}).join(', ');
     if(g.status==='cancelled'){goCancelled();return;}
+    console.log('LISTENER fired: status='+g.status+' me='+L.myName+' isHost='+L.isHost);
     if(g.status==='lobby')onLobby(g);
     else if(g.status==='reveal'){onReveal(g);checkAllReady(g);}
     else if(g.status==='discussion')onDiscussion(g);
@@ -433,14 +434,18 @@ function generatePasswords(){
 }
 
 function onReveal(g){
-  if($('s-role-reveal').classList.contains('active'))return;
+  console.log('onReveal called, me='+L.myName+' players='+JSON.stringify(Object.keys(g.players||{})));
+  if($('s-role-reveal').classList.contains('active')){console.log('already on reveal screen');return;}
   const me=g.players[L.myName];
+  console.log('my player data:', JSON.stringify(me));
   if(!me||!me.role){
-    // Player data not ready yet — listener will fire again when it is
     const pd=$('player-debug');
     if(pd) pd.textContent='Waiting for role… ('+L.myName+')';
+    console.log('no role yet for '+L.myName);
     return;
   }
+  // Show the screen first so all elements exist before we access them
+  show('s-role-reveal');
   const rc=$('reveal-content');
   rc.classList.add('blurred');rc.classList.remove('revealed');
   $('reveal-btn').style.display='block';
@@ -452,7 +457,6 @@ function onReveal(g){
   }else{
     rc.innerHTML=`<div class="role-card"><div class="eyebrow" style="color:rgba(255,255,255,0.5);">Your role</div><div class="role-label">You are Good</div><p style="font-size:14px;opacity:0.8;line-height:1.5;margin-bottom:0;">Two players are hiding secret words in conversation. Listen carefully and find them before it's too late.</p><div class="password-box"><div style="font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:0.1em;">No secret word.</div><div style="font-size:14px;margin-top:6px;opacity:0.75;">Trust your instincts.</div></div></div>`;
   }
-  show('s-role-reveal');
 }
 
 function revealRole(){$('reveal-content').classList.add('revealed');$('reveal-btn').style.display='none';$('reveal-done-btn').style.display='block';}
