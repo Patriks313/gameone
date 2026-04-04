@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 4.1
+     SHADOW COUNCIL · Version: 4.2
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -389,7 +389,9 @@ async function startGame(){
     const snap=await get(gref('games/'+L.room));
     const g=snap.val();
     const ps=Object.values(g.players);
-    const sh=[...ps].sort(()=>Math.random()-0.5);
+    // Fisher-Yates shuffle — truly uniform distribution
+    const sh=[...ps];
+    for(let i=sh.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
     const e1=sh[0].name,e2=sh[1].name;
     const pair=generatePasswords();
     btn.textContent='Writing to Firebase…';
