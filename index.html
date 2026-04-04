@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 3.4
+     SHADOW COUNCIL · Version: 3.8
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -540,7 +540,6 @@ function onVoting(g){
   if(!$('s-voting').classList.contains('active'))show('s-voting');
 }
 
-let lastProcessedRound = 0;
 async function onResult(g){
   const thisRound = g.round||1;
 
@@ -548,10 +547,14 @@ async function onResult(g){
   const players=Object.values(g.players||{});
 
 
-  // Tally votes
+  // Tally votes — initialise from ALL players (eliminated or not)
+  // so that stale eliminated flags don't exclude valid vote targets
   const tally={};
-  players.filter(p=>!p.eliminated).forEach(p=>{tally[p.name]=0;});
-  Object.values(g.votes||{}).forEach(v=>{if(v&&tally[v]!==undefined)tally[v]++;});
+  players.forEach(p=>{tally[p.name]=0;});
+  const rawVotes=g.votes||{};
+  Object.values(rawVotes).forEach(v=>{if(v&&tally[v]!==undefined)tally[v]++;});
+  // Remove players with 0 votes who are already eliminated (keep display clean)
+  players.filter(p=>p.eliminated).forEach(p=>{ if(tally[p.name]===0) delete tally[p.name]; });
   const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
   const maxV=sorted[0]?sorted[0][1]:0;
   $('result-round-label').textContent='Round '+thisRound+' result';
@@ -575,41 +578,41 @@ async function onResult(g){
   const eliminatedNames = new Set(eliminated);
   const remainEvil = players.filter(p=>p.role==='evil'&&!eliminatedNames.has(p.name)&&!p.eliminated).length;
   const remainGood = players.filter(p=>p.role==='good'&&!eliminatedNames.has(p.name)&&!p.eliminated).length;
-  const gameOver = eliminated.length>0 && remainEvil===0;
+  // Good wins: all evil eliminated
+  // Evil wins: no good players left (evil >= good, impossible to vote them out)
+  const goodWins = eliminated.length>0 && remainEvil===0;
+  const evilWins = remainGood===0 && remainEvil>0;
+  const gameOver = goodWins || evilWins;
 
   $('game-continues').style.display='none';
   $('game-over-trigger').style.display='none';
   show('s-vote-result');
 
-  if(L.isHost){
-    // Host calculates outcome and writes to Firebase — players wait for status change
-    if(eliminated.length>0 && lastProcessedRound !== thisRound){
-      lastProcessedRound = thisRound;
-      const u={};
-      eliminated.forEach(n=>{ u['players/'+n+'/eliminated']=true; });
-      if(gameOver){
-        u.status='gameover';
-      }
-      await update(gref('games/'+L.room), u);
-    }
-    // Show host the correct buttons
-    if(gameOver){
-      $('game-over-trigger').style.display='block';
-    }else{
-      $('game-continues').style.display='block';
-      $('continues-text').textContent=remainGood+' good vs '+remainEvil+' evil still in the game.';
-      $('continue-btn').style.display='block';
-    }
-  } else {
-    // Players wait — show neutral message until host advances the game
+  // Write elimination to Firebase — host only, skip if already written
+  // Check Firebase state (not local variable) to prevent double writes
+  const alreadyEliminated = eliminated.every(n=>{
+    const p=g.players[n]; return p&&p.eliminated;
+  });
+  if(L.isHost && eliminated.length>0 && !alreadyEliminated){
+    const u={};
+    eliminated.forEach(n=>{ u['players/'+n+'/eliminated']=true; });
+    if(gameOver){ u.status='gameover'; u.winner=goodWins?'good':'evil'; }
+    await update(gref('games/'+L.room), u);
+  }
+
+  // Everyone sees the same result — host just gets the continue button
+  const remaining = (remainGood+remainEvil);
+  if(gameOver){
+    $('game-over-trigger').style.display='block';
+  }else{
     $('game-continues').style.display='block';
-    $('continues-text').textContent='Waiting for host to continue…';
-    $('continue-btn').style.display='none';
+    $('continues-text').textContent=remaining+' players still in the game.';
+    $('continue-btn').style.display=L.isHost?'block':'none';
+    if(!L.isHost) $('continues-text').textContent='Waiting for host to continue…';
   }
 }
 
 async function continueRound(){
-  lastProcessedRound=0;
   const snap=await get(gref('games/'+L.room));
   const g=snap.val();
   await update(gref('games/'+L.room),{
@@ -645,12 +648,10 @@ async function checkAllReady(g){
 }
 
 function onGameOver(g){
-  // This fires when host sets status=gameover — show win screen for everyone
   const players=Object.values(g.players||{});
-  const evils=players.filter(p=>p.role==='evil');
-  const allOut=evils.every(p=>p.eliminated);
-  $('win-title').textContent=allOut?'Good wins!':'Evil wins!';
-  $('win-subtitle').textContent=allOut?'Both evil players were unmasked.':'The evil pair survived.';
+  const goodWon=g.winner==='good';
+  $('win-title').textContent=goodWon?'Good wins!':'Evil wins!';
+  $('win-subtitle').textContent=goodWon?'Both evil players were unmasked.':'The evil pair outlasted the good.';
   $('evil-reveal-chips').innerHTML=evils.map(p=>`<span class="chip">${p.name}</span>`).join('');
   $('win-passwords').textContent='"'+(g.words[0]||'?')+'" & "'+(g.words[1]||'?')+'"';
   $('win-player-list').innerHTML=players.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--parchment3);"><span style="font-weight:500;">${p.name}</span><span class="badge" style="background:var(--parchment2);border:1px solid var(--parchment3);">${p.role}${p.eliminated?' · out':''}</span></div>`).join('');
