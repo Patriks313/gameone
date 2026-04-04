@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 3.9
+     SHADOW COUNCIL · Version: 4.1
      Edit the number above to update the version shown in the app.
 ═══════════════════════════════ -->
 <html lang="en">
@@ -178,7 +178,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
       <button class="btn btn-danger" id="end-game-btn" style="margin-top:8px;">End game</button>
     </div>
   </div>
-  <div id="role-reminder" style="width:100%;display:none;"><div id="reminder-content"></div></div>
+
   <div style="width:100%;">
     <div class="section-header">Still in the game</div>
     <div class="chips" id="disc-chips"></div>
@@ -222,6 +222,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div id="game-over-trigger" style="width:100%;display:none;">
     <button class="btn btn-gold" id="see-result-btn">See final result ✦</button>
   </div>
+  <button class="btn bp" id="release-btn" style="display:none;margin-top:0.5rem;">Release results to everyone</button>
   <div class="spacer"></div>
 </div>
 
@@ -298,6 +299,7 @@ $('force-close-btn').addEventListener('click', closeVoting);
 $('end-game-btn').addEventListener('click', cancelGame);
 $('continue-btn').addEventListener('click', continueRound);
 $('see-result-btn').addEventListener('click', ()=>show('s-win'));
+$('release-btn').addEventListener('click', releaseResults);
 $('play-again-btn').addEventListener('click', ()=>location.reload());
 $('back-to-start-btn').addEventListener('click', ()=>location.reload());
 
@@ -364,6 +366,7 @@ function listenToGame(){
     else if(g.status==='reveal'){onReveal(g);checkAllReady(g);}
     else if(g.status==='discussion')onDiscussion(g);
     else if(g.status==='voting')onVoting(g);
+    else if(g.status==='closed')onClosed(g);
     else if(g.status==='result'){onResult(g);if(L.isHost)checkAllReady(g);}
     else if(g.status==='gameover')onGameOver(g);
   });
@@ -475,14 +478,7 @@ function onDiscussion(g){
   const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
   $('disc-chips').innerHTML=active.map(p=>`<span class="chip"><span class="dot"></span>${p.name}</span>`).join('');
   $('host-controls').style.display=L.isHost?'block':'none';
-  const me=g.players[L.myName];
-  if(me&&me.role==='evil'){
-    $('reminder-content').innerHTML=`<div style="background:var(--parchment2);border:1px solid var(--parchment3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:0.5rem;"><div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Your secret word</div><div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:600;color:var(--ink);">${me.word}</div></div>`;
-    $('role-reminder').style.display='block';
-  }else if(me){
-    $('reminder-content').innerHTML=`<div style="background:var(--parchment2);border:1px solid var(--parchment3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:0.5rem;"><div style="font-size:13px;color:var(--ink2);">Listen carefully for the hidden words.</div></div>`;
-    $('role-reminder').style.display='block';
-  }
+
   if(!$('s-discussion').classList.contains('active'))show('s-discussion');
 }
 
@@ -491,7 +487,7 @@ async function openVoting(){
 }
 
 async function closeVoting(){
-  await update(gref('games/'+L.room),{votingOpen:false,status:'result'});
+  await update(gref('games/'+L.room),{votingOpen:false,status:'closed'});
 }
 
 function onVoting(g){
@@ -540,6 +536,35 @@ function onVoting(g){
   if(!$('s-voting').classList.contains('active'))show('s-voting');
 }
 
+function onClosed(g){
+  // Voting closed — waiting for host to release results
+  if(L.isHost){
+    // Show host a waiting screen with release button
+    $('result-round-label').textContent='Round '+(g.round||1)+' result';
+    $('result-bars').innerHTML='';
+    $('eliminated-card').style.display='none';
+    $('game-continues').style.display='none';
+    $('game-over-trigger').style.display='none';
+    // Reuse result screen with just the release button
+    const relBtn=document.getElementById('release-btn');
+    if(relBtn) relBtn.style.display='block';
+    show('s-vote-result');
+  } else {
+    // Players see a waiting message on voting screen
+    $('voting-sub').textContent='Voting closed — waiting for host to release results…';
+    $('vote-list').innerHTML=`<div class="card" style="text-align:center;color:var(--ink2);padding:2rem 1rem;">
+      <p style="font-size:15px;">All votes are in.</p>
+      <p style="font-size:13px;margin-top:8px;opacity:0.7;">The host will reveal the result shortly.</p>
+    </div>`;
+    $('host-voting-controls').style.display='none';
+    if(!$('s-voting').classList.contains('active'))show('s-voting');
+  }
+}
+
+async function releaseResults(){
+  await update(gref('games/'+L.room),{status:'result'});
+}
+
 async function onResult(g){
   const thisRound = g.round||1;
 
@@ -586,6 +611,9 @@ async function onResult(g){
 
   $('game-continues').style.display='none';
   $('game-over-trigger').style.display='none';
+  $('eliminated-card').style.display='block';
+  const relBtn=document.getElementById('release-btn');
+  if(relBtn) relBtn.style.display='none';
   show('s-vote-result');
 
   // Write elimination to Firebase — host only, skip if already written
