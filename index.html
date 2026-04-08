@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 4.6
+     SHADOW COUNCIL · Version: 4.8
      Edit the number above to update the version shown in the app.
      
      Created by Patrik Stalbarg
@@ -21,7 +21,7 @@
 :root{--ink:#0e0d0b;--ink2:#5a5750;--ink3:#9a9690;--parchment:#f5f0e8;--parchment2:#ede7d8;--parchment3:#d8d0bc;--evil:#8B2020;--gold:#b8862a;--radius:14px;--radius-sm:8px;}
 html,body{height:100%;background:var(--parchment);color:var(--ink);font-family:'DM Sans',sans-serif;}
 body{display:flex;flex-direction:column;align-items:center;min-height:100dvh;}
-.screen{display:none;flex-direction:column;align-items:center;width:100%;max-width:480px;min-height:100dvh;padding:1.5rem 1.2rem 2rem;}
+.screen{display:none;flex-direction:column;align-items:center;width:100%;max-width:480px;min-height:100dvh;padding:1.5rem 1.2rem 6rem;}
 .screen.active{display:flex;}
 h1{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:600;line-height:1.1;text-align:center;}
 h2{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;text-align:center;}
@@ -79,8 +79,18 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8685731893942126" crossorigin="anonymous"></script>
 </head>
 <body>
+<!-- Fixed bottom ad banner — always visible -->
+<div style="position:fixed;bottom:0;left:0;right:0;background:var(--parchment2);border-top:1px solid var(--parchment3);z-index:998;text-align:center;">
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-8685731893942126"
+       data-ad-slot="1494528223"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
 <!-- Fixed footer — always visible on all screens -->
-<p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v4.6</p>
+<p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v4.8</p>
 <p style="position:fixed;bottom:8px;left:12px;font-size:10px;color:var(--ink3);opacity:0.5;z-index:999;">© 2026 Patrik S · greblats.com · <a href="/privacy.html" style="color:var(--ink3);">Privacy</a></p>
 
 <!-- LANDING -->
@@ -180,6 +190,15 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <button class="btn btn-ghost" id="reveal-btn" style="margin-top:0.5rem;">Tap to reveal my role</button>
   <button class="btn btn-primary" id="reveal-done-btn" style="display:none;margin-top:0.5rem;">I've read it — continue</button>
   <div class="spacer"></div>
+  <div style="width:100%;margin-bottom:1rem;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-8685731893942126"
+         data-ad-slot="1494528223"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
 </div>
 
 <!-- DISCUSSION -->
