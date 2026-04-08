@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 4.2
+     SHADOW COUNCIL · Version: 4.5
      Edit the number above to update the version shown in the app.
+     
+     Created by Patrik Stalbarg
+     © 2026 greblats.com — All rights reserved
 ═══════════════════════════════ -->
 <html lang="en">
 <head>
@@ -75,12 +78,16 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </style>
 </head>
 <body>
+<!-- Fixed footer — always visible on all screens -->
+<p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v4.5</p>
+<p style="position:fixed;bottom:8px;left:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">© 2026 Patrik S · greblats.com</p>
+
 <!-- LANDING -->
 <div class="screen active" id="s-landing">
   <div class="spacer"></div>
   <div class="ornament">✦ ✦ ✦</div>
   <h1 style="margin-bottom:0.5rem;">Shadow<br/>Council</h1>
-  <p class="sub" style="margin-top:0.6rem;">A game of trust, deception,<br/>and hidden words.</p>
+  <p class="sub" style="margin-top:0.6rem;">A social game for groups — perfect alongside a dinner or any gathering.<br/>Hidden words. Hidden motives. Who do you trust?</p>
   <div class="tabs">
     <button class="tab active" id="tab-host">Host game</button>
     <button class="tab" id="tab-join">Join game</button>
@@ -104,16 +111,15 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div id="form-rules" style="width:100%;display:none">
     <div class="card">
       <h3 style="margin-bottom:1rem;">How to play</h3>
-      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The setup</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">The host creates a room and shares a 4-digit code. Everyone joins on their own phone. Two players are secretly chosen as Evil.</div></div>
-      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The evil pair</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Evil players each receive a secret word from a related pair. They must find each other through conversation without being caught.</div></div>
-      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The good players</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Good players only know they are not evil. Listen for the hidden words slipping into conversation.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The setup</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Shadow Council is designed as a side activity — something to play alongside a dinner, a trip, or any gathering. The host creates a room and shares a 4-digit code. Everyone joins on their own phone. Two players are secretly chosen as Evil.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The evil pair</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Evil players each receive a secret word from a related pair. Their aim is to find each other through conversation — and eliminate the good players before being caught themselves.</div></div>
+      <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">The good players</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Good players only know they are not evil. Their aim is to identify and eliminate both evil players. Listen carefully — the evil pair will try to slip their secret words into natural conversation to signal each other.</div></div>
       <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Voting</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">The host opens voting. Everyone taps their suspect. The player with the most votes is eliminated each round — in case of a tie, all tied players are eliminated. Voting closes automatically when all have voted, or the host can force-close it. In the final round, eliminated players also get to vote.</div></div>
       <div class="rule-block"><div style="font-weight:500;margin-bottom:4px;">Winning</div><div style="font-size:14px;color:var(--ink2);line-height:1.6;">Good wins when both evil players are eliminated. Evil wins if the evil players outlast all the good ones. Keep voting until the game is decided.</div></div>
     </div>
   </div>
   <div class="spacer"></div>
   <p style="font-size:11px;color:var(--ink3);text-align:center;padding-bottom:1.5rem;">Shadow Council · real-time multiplayer</p>
-  <p style="position:fixed;bottom:8px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;" id="ver"></p>
 </div>
 
 <!-- HOST LOBBY -->
@@ -189,8 +195,8 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 <!-- VOTING -->
 <div class="screen" id="s-voting">
   <div class="eyebrow" style="margin-top:0.5rem;">Voting is open</div>
-  <h2 style="margin-bottom:0.3rem;">Who is evil?</h2>
-  <p class="sub" id="voting-sub">Tap your suspect.</p>
+  <h2 style="margin-bottom:0.3rem;">Who should be eliminated?</h2>
+  <p class="sub" id="voting-sub">Tap the player you think should be eliminated.</p>
   <div id="host-voting-controls" style="width:100%;display:none;">
     <div class="card">
       <div class="section-header" style="margin-top:0;">Host controls</div>
@@ -280,9 +286,7 @@ function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.r
 function genCode(){ return String(Math.floor(1000+Math.random()*9000)); }
 function gref(path){ return ref(db,path); }
 
-// Version from top comment
-const vm = document.documentElement.outerHTML.match(/Version:\s*([\d.]+)/);
-if(vm) $('ver').textContent = 'v'+vm[1];
+
 
 // Wire all buttons
 $('tab-host').addEventListener('click', ()=>setMode('host'));
@@ -420,16 +424,73 @@ async function startGame(){
   }
 }
 
+const usedPairs=[];
 function generatePasswords(){
   const pairs=[
-    ['north','south'],['anchor','compass'],['silver','copper'],['morning','evening'],
-    ['candle','lantern'],['bridge','tunnel'],['feather','stone'],['river','lake'],
-    ['crown','throne'],['shadow','light'],['sword','shield'],['wolf','fox'],
-    ['salt','pepper'],['thunder','lightning'],['cat','dog'],['sun','moon'],
-    ['fire','ice'],['mountain','valley'],['captain','sailor'],['rose','thorn'],
-    ['castle','tower'],['mirror','shadow'],['drum','trumpet'],['key','lock']
+    // Nature
+    ['north','south'],['river','lake'],['mountain','valley'],['fire','ice'],
+    ['thunder','lightning'],['sun','moon'],['dawn','dusk'],['ocean','desert'],
+    ['forest','meadow'],['rain','snow'],['wind','tide'],['stone','feather'],
+    ['cave','cliff'],['spring','autumn'],['frost','flame'],['cloud','shadow'],
+    ['volcano','glacier'],['delta','canyon'],['marsh','dune'],['creek','pond'],
+    // Animals
+    ['wolf','fox'],['cat','dog'],['eagle','owl'],['lion','tiger'],
+    ['shark','whale'],['bear','deer'],['crow','dove'],['horse','donkey'],
+    ['snake','lizard'],['rabbit','hare'],['spider','fly'],['hawk','sparrow'],
+    ['salmon','trout'],['seal','otter'],['raven','magpie'],['lynx','panther'],
+    ['bison','elk'],['crane','heron'],['beetle','moth'],['crab','lobster'],
+    // Objects
+    ['anchor','compass'],['sword','shield'],['key','lock'],['crown','throne'],
+    ['candle','lantern'],['bridge','tunnel'],['mirror','window'],['drum','trumpet'],
+    ['hammer','nail'],['needle','thread'],['bow','arrow'],['rope','chain'],
+    ['lens','prism'],['coin','stamp'],['bell','clock'],['map','compass'],
+    ['quill','ink'],['flask','vial'],['mask','cloak'],['ring','bracelet'],
+    // Food & drink
+    ['salt','pepper'],['sugar','spice'],['bread','butter'],['wine','beer'],
+    ['coffee','tea'],['honey','jam'],['lemon','lime'],['mint','basil'],
+    ['olive','grape'],['apple','pear'],['garlic','onion'],['rice','pasta'],
+    ['cream','custard'],['bacon','egg'],['walnut','almond'],['cherry','plum'],
+    ['ginger','cinnamon'],['vanilla','cocoa'],['mango','papaya'],['fig','date'],
+    // Places & structures
+    ['castle','tower'],['port','harbour'],['palace','temple'],['market','square'],
+    ['chapel','abbey'],['inn','tavern'],['forge','mill'],['barn','stable'],
+    ['lighthouse','beacon'],['cellar','attic'],['garden','courtyard'],['vault','crypt'],
+    ['arena','colosseum'],['plaza','boulevard'],['pier','jetty'],['depot','station'],
+    ['ranch','farm'],['manor','cottage'],['citadel','fortress'],['shrine','altar'],
+    // People & roles
+    ['captain','sailor'],['knight','squire'],['king','queen'],['hunter','tracker'],
+    ['merchant','trader'],['scholar','scribe'],['doctor','nurse'],['judge','lawyer'],
+    ['pilot','navigator'],['chef','baker'],['painter','sculptor'],['poet','author'],
+    ['guard','warden'],['spy','agent'],['herald','messenger'],['smith','carpenter'],
+    ['monk','priest'],['duke','earl'],['scout','ranger'],['jester','bard'],
+    // Concepts & qualities
+    ['silver','copper'],['shadow','light'],['rose','thorn'],['morning','evening'],
+    ['truth','secret'],['gold','iron'],['crystal','amber'],['silk','velvet'],
+    ['wisdom','courage'],['order','chaos'],['grace','strength'],['swift','steady'],
+    ['old','new'],['lost','found'],['bold','calm'],['deep','vast'],
+    ['ancient','modern'],['wild','tame'],['rough','smooth'],['dark','bright'],
+    // Actions & states
+    ['rising','falling'],['hidden','known'],['broken','mended'],['frozen','melting'],
+    ['sleeping','waking'],['hunting','hiding'],['building','burning'],['sailing','anchored'],
+    ['growing','fading'],['laughing','weeping'],['rushing','waiting'],['giving','taking'],
+    // Colours & materials
+    ['crimson','ivory'],['jade','obsidian'],['scarlet','indigo'],['ebony','ivory'],
+    ['bronze','marble'],['cedar','pine'],['flint','clay'],['linen','wool'],
+    // Misc evocative pairs
+    ['ghost','echo'],['myth','legend'],['riddle','cipher'],['storm','calm'],
+    ['feast','famine'],['luck','fate'],['dream','omen'],['spark','ember'],
+    ['crown','exile'],['glory','ruin'],['dawn','eclipse'],['oath','betrayal']
   ];
-  return pairs[Math.floor(Math.random()*pairs.length)];
+  // Filter out recently used pairs
+  const available=pairs.filter((_,i)=>!usedPairs.includes(i));
+  const pool=available.length>0?available:pairs;
+  const idx=Math.floor(Math.random()*pool.length);
+  const chosen=pool[idx];
+  // Track used index (map back to original pairs array)
+  const origIdx=pairs.indexOf(chosen);
+  usedPairs.push(origIdx);
+  if(usedPairs.length>10) usedPairs.shift();
+  return chosen;
 }
 
 function onReveal(g){
@@ -514,7 +575,7 @@ function onVoting(g){
   }else{
     $('host-voting-controls').style.display='none';
   }
-  $('voting-sub').textContent=voteCount+' of '+voterCount+' voted — tap your suspect';
+  $('voting-sub').textContent=voteCount+' of '+voterCount+' voted';
 
   const myVote=votes['v_'+L.myName]||null;
   const isFinalRound=active.length<=2;
