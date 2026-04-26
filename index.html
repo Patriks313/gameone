@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 5.1
+     SHADOW COUNCIL · Version: 5.2
      Edit the number above to update the version shown in the app.
      
      Created by Patrik Stalbarg
@@ -12,6 +12,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="Shadow Council"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="theme-color" content="#f5f0e8"/>
+<!-- Inline manifest keeps the one-file philosophy. The base64 string is the JSON below. -->
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Shadow Council","short_name":"Shadow Council","start_url":"/","display":"standalone","background_color":"%23f5f0e8","theme_color":"%23f5f0e8","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27><rect width=%27512%27 height=%27512%27 rx=%2796%27 fill=%27%23f5f0e8%27/><text x=%27256%27 y=%27315%27 font-family=%27Georgia,serif%27 font-size=%27260%27 font-weight=%27600%27 text-anchor=%27middle%27 fill=%27%230e0d0b%27>SC</text><text x=%27256%27 y=%27430%27 font-family=%27Georgia,serif%27 font-size=%2748%27 text-anchor=%27middle%27 fill=%27%23b8862a%27>%E2%9C%A6 %E2%9C%A6 %E2%9C%A6</text></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}'/>
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27><rect width=%27512%27 height=%27512%27 rx=%2796%27 fill=%27%23f5f0e8%27/><text x=%27256%27 y=%27315%27 font-family=%27Georgia,serif%27 font-size=%27260%27 font-weight=%27600%27 text-anchor=%27middle%27 fill=%27%230e0d0b%27>SC</text></svg>'/>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <title>Shadow Council</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -89,7 +94,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
 <!-- Fixed footer — always visible on all screens -->
-<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.1</p>
+<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.2</p>
 <p style="position:fixed;bottom:68px;left:12px;font-size:10px;color:var(--ink3);opacity:0.5;z-index:999;">© 2026 Patrik S · greblats.com · <a href="/privacy.html" style="color:var(--ink3);">Privacy</a></p>
 
 <!-- LANDING -->
@@ -98,6 +103,20 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div class="ornament">✦ ✦ ✦</div>
   <h1 style="margin-bottom:0.5rem;">Shadow<br/>Council</h1>
   <p class="sub" style="margin-top:0.6rem;">A social game for groups — perfect alongside a dinner or any gathering.<br/>Hidden words. Hidden motives. Who do you trust?</p>
+  <!-- Install prompt — populated by JS. Hidden by default, shown when install is possible or instructions are needed. -->
+  <div id="install-banner" style="display:none;width:100%;background:var(--parchment2);border:1px solid var(--parchment3);border-radius:var(--radius);padding:0.9rem 1rem;margin-bottom:1rem;">
+    <div style="display:flex;align-items:flex-start;gap:0.6rem;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--gold);line-height:1;margin-top:2px;">✦</div>
+      <div style="flex:1;">
+        <div style="font-weight:500;font-size:14px;margin-bottom:2px;" id="install-title">Add to your home screen</div>
+        <div style="font-size:13px;color:var(--ink2);line-height:1.5;" id="install-body">For longer games — keeps your connection alive if you switch apps or lock your phone.</div>
+        <div id="install-actions" style="margin-top:0.6rem;display:flex;gap:6px;">
+          <button class="btn btn-primary" id="install-btn" style="display:none;padding:8px 14px;font-size:13px;width:auto;">Install app</button>
+          <button class="btn btn-ghost" id="install-dismiss" style="padding:8px 14px;font-size:13px;width:auto;">Not now</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="tabs">
     <button class="tab active" id="tab-host">Host game</button>
     <button class="tab" id="tab-join">Join game</button>
@@ -347,7 +366,96 @@ function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.r
 function genCode(){ return String(Math.floor(1000+Math.random()*9000)); }
 function gref(path){ return ref(db,path); }
 
+// ─── Install / Add to Home Screen ─────────────────────────────────────
+// Three paths: Android Chrome (native prompt via beforeinstallprompt),
+// iOS Safari (manual instructions, no API exists), other browsers (soft hint).
+// Already-installed users never see any of this.
+let deferredInstallPrompt = null;
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function detectPlatform(){
+  const ua=navigator.userAgent;
+  const isIOS=/iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isIOSSafari=isIOS && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+  const isIOSOther=isIOS && !isIOSSafari;
+  const isAndroid=/Android/.test(ua);
+  return {isIOS, isIOSSafari, isIOSOther, isAndroid};
+}
 
+// Register the install-prompt event listener IMMEDIATELY at script load — Android Chrome
+// can fire this very early and we'd miss it if we waited for DOMContentLoaded.
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  // Update banner if it's already in the DOM
+  const banner=document.getElementById('install-banner');
+  const title=document.getElementById('install-title');
+  const body=document.getElementById('install-body');
+  const installBtn=document.getElementById('install-btn');
+  if(banner && !isStandalone()){
+    title.textContent='Install Shadow Council';
+    body.textContent='One-tap install — keeps you connected through long games even if you switch apps.';
+    installBtn.style.display='inline-block';
+    banner.style.display='block';
+  }
+});
+
+window.addEventListener('appinstalled',()=>{
+  const banner=document.getElementById('install-banner');
+  if(banner) banner.style.display='none';
+  deferredInstallPrompt=null;
+});
+
+function setupInstallPrompt(){
+  if(isStandalone()) return;
+  const banner=document.getElementById('install-banner');
+  const title=document.getElementById('install-title');
+  const body=document.getElementById('install-body');
+  const installBtn=document.getElementById('install-btn');
+  if(!banner) return;
+
+  const {isIOSSafari, isIOSOther} = detectPlatform();
+
+  // If beforeinstallprompt already fired, the banner is already shown — nothing to do.
+  if(deferredInstallPrompt) return;
+
+  if(isIOSSafari){
+    title.textContent='Add to Home Screen';
+    body.innerHTML='Tap the <strong>Share</strong> icon at the bottom of Safari, then <strong>"Add to Home Screen"</strong>. Long games stay connected when you launch from the home screen.';
+    installBtn.style.display='none';
+    banner.style.display='block';
+    return;
+  }
+
+  if(isIOSOther){
+    title.textContent='For longer games — open in Safari';
+    body.innerHTML='This browser can\'t add Shadow Council to your home screen. For best results in long games, open this page in <strong>Safari</strong>, then tap Share → Add to Home Screen.';
+    installBtn.style.display='none';
+    banner.style.display='block';
+    return;
+  }
+  // Android Chrome will fire beforeinstallprompt above and the listener will show the banner then.
+  // Everyone else: stay silent.
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  setupInstallPrompt();
+  const installBtn=document.getElementById('install-btn');
+  const dismissBtn=document.getElementById('install-dismiss');
+  const banner=document.getElementById('install-banner');
+  if(installBtn) installBtn.addEventListener('click', async ()=>{
+    if(!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    try{ await deferredInstallPrompt.userChoice; }catch(e){}
+    deferredInstallPrompt=null;
+    banner.style.display='none';
+  });
+  if(dismissBtn) dismissBtn.addEventListener('click',()=>{
+    banner.style.display='none';
+    // Intentionally NOT persisted — re-shows next session, since this isn't cosmetic, it's a stability fix.
+  });
+});
 
 // Wire all buttons
 $('tab-host').addEventListener('click', ()=>setMode('host'));
