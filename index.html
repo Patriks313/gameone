@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 5.0
+     SHADOW COUNCIL · Version: 5.1
      Edit the number above to update the version shown in the app.
      
      Created by Patrik Stalbarg
@@ -89,7 +89,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
 <!-- Fixed footer — always visible on all screens -->
-<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.0</p>
+<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.1</p>
 <p style="position:fixed;bottom:68px;left:12px;font-size:10px;color:var(--ink3);opacity:0.5;z-index:999;">© 2026 Patrik S · greblats.com · <a href="/privacy.html" style="color:var(--ink3);">Privacy</a></p>
 
 <!-- LANDING -->
@@ -318,6 +318,30 @@ const db = getDatabase(fbapp);
 const L = { isHost:false, myName:'', room:'' };
 let unsubscribe = null;
 
+// Session persistence — survives tab reloads, throttling, OS killing the tab mid-game.
+// Uses sessionStorage so two tabs on one device keep separate identities.
+const SESSION_KEY = 'shadowcouncil_session_v1';
+function saveSession(){
+  try{
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      isHost:L.isHost, myName:L.myName, room:L.room, savedAt:Date.now()
+    }));
+  }catch(e){/* private mode etc — fail silently, game still works in memory */}
+}
+function loadSession(){
+  try{
+    const raw=sessionStorage.getItem(SESSION_KEY);
+    if(!raw) return null;
+    const s=JSON.parse(raw);
+    // Drop sessions older than 6 hours — nobody plays Shadow Council that long
+    if(!s||!s.room||!s.myName||(Date.now()-s.savedAt)>6*60*60*1000) return null;
+    return s;
+  }catch(e){return null;}
+}
+function clearSession(){
+  try{sessionStorage.removeItem(SESSION_KEY);}catch(e){}
+}
+
 const $ = id => document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
 function genCode(){ return String(Math.floor(1000+Math.random()*9000)); }
@@ -341,8 +365,8 @@ $('end-game-btn').addEventListener('click', cancelGame);
 $('continue-btn').addEventListener('click', continueRound);
 $('see-result-btn').addEventListener('click', ()=>show('s-win'));
 $('release-btn').addEventListener('click', releaseResults);
-$('play-again-btn').addEventListener('click', ()=>location.reload());
-$('back-to-start-btn').addEventListener('click', ()=>location.reload());
+$('play-again-btn').addEventListener('click', ()=>{clearSession();location.reload();});
+$('back-to-start-btn').addEventListener('click', ()=>{clearSession();location.reload();});
 
 function setMode(m){
   ['host','join','rules'].forEach(t=>{
@@ -364,6 +388,7 @@ async function hostGame(){
       votes:{},votingOpen:false,words:['',''],createdAt:Date.now()
     });
     $('display-code').textContent=L.room;
+    saveSession();
     listenToGame();
     show('s-host-lobby');
   }catch(e){
@@ -388,6 +413,7 @@ async function joinGame(){
     await update(gref('games/'+code+'/players'),{[name]:{name,role:'',eliminated:false,word:'',ready:false}});
     $('player-joined-name').textContent=name;
     $('player-room-display').textContent=code;
+    saveSession();
     listenToGame();
     show('s-player-wait');
   }catch(e){
@@ -420,6 +446,9 @@ function onLobby(g){
   const ok=ps.length>=4;
   $('start-btn').style.opacity=ok?'1':'0.4';
   $('start-btn').style.pointerEvents=ok?'auto':'none';
+  // Self-navigate on resume: if we landed here from a reload, listener fires before we're on the right screen
+  if(L.isHost && !$('s-host-lobby').classList.contains('active')) show('s-host-lobby');
+  else if(!L.isHost && !$('s-player-wait').classList.contains('active')) show('s-player-wait');
 }
 
 async function startGame(){
@@ -790,13 +819,44 @@ async function cancelGame(){
   if(!confirm('End the game for everyone?'))return;
   if(unsubscribe){unsubscribe();unsubscribe=null;}
   await update(gref('games/'+L.room),{status:'cancelled'});
+  clearSession();
   show('s-cancelled');
 }
 
 function goCancelled(){
   if(unsubscribe){unsubscribe();unsubscribe=null;}
+  clearSession();
   if(!$('s-cancelled').classList.contains('active'))show('s-cancelled');
 }
+
+// Auto-resume on page load — if a session exists, verify it's still valid in Firebase and rejoin.
+// This is what makes a backgrounded-tab kill or accidental refresh recoverable mid-game.
+async function tryResume(){
+  const s=loadSession();
+  if(!s) return;
+  try{
+    const snap=await get(gref('games/'+s.room));
+    if(!snap.exists()){clearSession();return;}
+    const g=snap.val();
+    // If the game ended or was cancelled while we were gone, drop the session.
+    if(g.status==='cancelled'){clearSession();return;}
+    // If our player slot is gone (host wiped, etc), drop the session.
+    if(!g.players||!g.players[s.myName]){clearSession();return;}
+    // Restore state and re-attach the listener — listener drives the screen from g.status.
+    L.isHost=!!s.isHost;
+    L.myName=s.myName;
+    L.room=s.room;
+    // Pre-fill UI bits the listener doesn't redraw on every tick
+    $('display-code').textContent=L.room;
+    $('player-joined-name').textContent=L.myName;
+    $('player-room-display').textContent=L.room;
+    listenToGame();
+  }catch(e){
+    // If Firebase read fails, leave the session intact — user can retry by reloading.
+    // Don't clear: the failure might just be a transient network blip.
+  }
+}
+tryResume();
 </script>
 </body>
 </html>
