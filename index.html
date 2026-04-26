@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 5.2
+     SHADOW COUNCIL · Version: 5.3
      Edit the number above to update the version shown in the app.
      
      Created by Patrik Stalbarg
@@ -94,7 +94,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
 <!-- Fixed footer — always visible on all screens -->
-<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.2</p>
+<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.3</p>
 <p style="position:fixed;bottom:68px;left:12px;font-size:10px;color:var(--ink3);opacity:0.5;z-index:999;">© 2026 Patrik S · greblats.com · <a href="/privacy.html" style="color:var(--ink3);">Privacy</a></p>
 
 <!-- LANDING -->
@@ -125,6 +125,14 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div id="form-host" style="width:100%">
     <div class="card">
       <div class="field-row"><div class="field-label">Your name</div><input type="text" id="host-name" placeholder="Enter your name" maxlength="20" autocomplete="off"/></div>
+      <div class="field-row">
+        <div class="field-label">Word language</div>
+        <div style="display:flex;gap:6px;">
+          <button type="button" class="lang-pill active" data-lang="en" style="flex:1;padding:10px;border:1px solid var(--ink);background:var(--ink);color:var(--parchment);border-radius:var(--radius-sm);font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent;">English</button>
+          <button type="button" class="lang-pill" data-lang="sv" style="flex:1;padding:10px;border:1px solid var(--parchment3);background:var(--parchment2);color:var(--ink2);border-radius:var(--radius-sm);font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent;">Svenska</button>
+        </div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:6px;">All players in this game will get words in this language.</div>
+      </div>
       <button class="btn btn-primary" id="host-btn">Create game room</button>
       <div class="error" id="host-err"></div>
     </div>
@@ -169,6 +177,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
     <div class="eyebrow">Room code</div>
     <div class="room-code" id="display-code">—</div>
     <p style="font-size:13px;color:var(--ink2);margin-top:0.4rem;">Share this with everyone in the room</p>
+    <p style="font-size:12px;color:var(--ink3);margin-top:0.4rem;">Words: <span id="lobby-lang-label">English</span></p>
   </div>
   <div style="width:100%">
     <div class="section-header">Players joined</div>
@@ -194,6 +203,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div class="card" style="text-align:center;">
     <div class="eyebrow">Room</div>
     <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;letter-spacing:0.2em;" id="player-room-display">—</div>
+    <p style="font-size:12px;color:var(--ink3);margin-top:0.4rem;">Words: <span id="player-lang-label">English</span></p>
   </div>
 
   <div class="spacer"></div>
@@ -463,6 +473,20 @@ $('tab-join').addEventListener('click', ()=>setMode('join'));
 $('tab-rules').addEventListener('click', ()=>setMode('rules'));
 $('host-btn').addEventListener('click', hostGame);
 $('join-btn').addEventListener('click', joinGame);
+
+// Language pill toggle on host form
+let selectedLang = 'en';
+document.querySelectorAll('.lang-pill').forEach(pill=>{
+  pill.addEventListener('click', ()=>{
+    selectedLang = pill.dataset.lang;
+    document.querySelectorAll('.lang-pill').forEach(p=>{
+      const active = p.dataset.lang === selectedLang;
+      p.style.background = active ? 'var(--ink)' : 'var(--parchment2)';
+      p.style.color = active ? 'var(--parchment)' : 'var(--ink2)';
+      p.style.borderColor = active ? 'var(--ink)' : 'var(--parchment3)';
+    });
+  });
+});
 $('start-btn').addEventListener('click', startGame);
 $('cancel-lobby-btn').addEventListener('click', cancelGame);
 $('reveal-btn').addEventListener('click', revealRole);
@@ -491,7 +515,7 @@ async function hostGame(){
   L.isHost=true;L.myName=name;L.room=genCode();
   try{
     await set(gref('games/'+L.room),{
-      status:'lobby',host:name,round:1,
+      status:'lobby',host:name,round:1,lang:selectedLang,
       players:{[name]:{name,role:'',eliminated:false,word:'',ready:false}},
       votes:{},votingOpen:false,words:['',''],createdAt:Date.now()
     });
@@ -554,6 +578,10 @@ function onLobby(g){
   const ok=ps.length>=4;
   $('start-btn').style.opacity=ok?'1':'0.4';
   $('start-btn').style.pointerEvents=ok?'auto':'none';
+  // Reflect language in both lobby and player-wait screens
+  const langLabel = (g.lang === 'sv') ? 'Svenska' : 'English';
+  const ll=$('lobby-lang-label'); if(ll) ll.textContent=langLabel;
+  const pl=$('player-lang-label'); if(pl) pl.textContent=langLabel;
   // Self-navigate on resume: if we landed here from a reload, listener fires before we're on the right screen
   if(L.isHost && !$('s-host-lobby').classList.contains('active')) show('s-host-lobby');
   else if(!L.isHost && !$('s-player-wait').classList.contains('active')) show('s-player-wait');
@@ -571,7 +599,7 @@ async function startGame(){
     const sh=[...ps];
     for(let i=sh.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
     const e1=sh[0].name,e2=sh[1].name;
-    const pair=generatePasswords();
+    const pair=generatePasswords(g.lang || 'en');
     btn.textContent='Writing to Firebase…';
     // One atomic update — all player roles + status in a single write
     // This means the listener fires exactly once with complete data
@@ -598,72 +626,127 @@ async function startGame(){
   }
 }
 
-const usedPairs=[];
-function generatePasswords(){
-  const pairs=[
-    // Nature
-    ['north','south'],['river','lake'],['mountain','valley'],['fire','ice'],
-    ['thunder','lightning'],['sun','moon'],['dawn','dusk'],['ocean','desert'],
-    ['forest','meadow'],['rain','snow'],['wind','tide'],['stone','feather'],
-    ['cave','cliff'],['spring','autumn'],['frost','flame'],['cloud','shadow'],
-    ['volcano','glacier'],['delta','canyon'],['marsh','dune'],['creek','pond'],
-    // Animals
-    ['wolf','fox'],['cat','dog'],['eagle','owl'],['lion','tiger'],
-    ['shark','whale'],['bear','deer'],['crow','dove'],['horse','donkey'],
-    ['snake','lizard'],['rabbit','hare'],['spider','fly'],['hawk','sparrow'],
-    ['salmon','trout'],['seal','otter'],['raven','magpie'],['lynx','panther'],
-    ['bison','elk'],['crane','heron'],['beetle','moth'],['crab','lobster'],
-    // Objects
-    ['anchor','compass'],['sword','shield'],['key','lock'],['crown','throne'],
-    ['candle','lantern'],['bridge','tunnel'],['mirror','window'],['drum','trumpet'],
-    ['hammer','nail'],['needle','thread'],['bow','arrow'],['rope','chain'],
-    ['lens','prism'],['coin','stamp'],['bell','clock'],['map','compass'],
-    ['quill','ink'],['flask','vial'],['mask','cloak'],['ring','bracelet'],
-    // Food & drink
-    ['salt','pepper'],['sugar','spice'],['bread','butter'],['wine','beer'],
-    ['coffee','tea'],['honey','jam'],['lemon','lime'],['mint','basil'],
-    ['olive','grape'],['apple','pear'],['garlic','onion'],['rice','pasta'],
-    ['cream','custard'],['bacon','egg'],['walnut','almond'],['cherry','plum'],
-    ['ginger','cinnamon'],['vanilla','cocoa'],['mango','papaya'],['fig','date'],
-    // Places & structures
-    ['castle','tower'],['port','harbour'],['palace','temple'],['market','square'],
-    ['chapel','abbey'],['inn','tavern'],['forge','mill'],['barn','stable'],
-    ['lighthouse','beacon'],['cellar','attic'],['garden','courtyard'],['vault','crypt'],
-    ['arena','colosseum'],['plaza','boulevard'],['pier','jetty'],['depot','station'],
-    ['ranch','farm'],['manor','cottage'],['citadel','fortress'],['shrine','altar'],
-    // People & roles
-    ['captain','sailor'],['knight','squire'],['king','queen'],['hunter','tracker'],
-    ['merchant','trader'],['scholar','scribe'],['doctor','nurse'],['judge','lawyer'],
-    ['pilot','navigator'],['chef','baker'],['painter','sculptor'],['poet','author'],
-    ['guard','warden'],['spy','agent'],['herald','messenger'],['smith','carpenter'],
-    ['monk','priest'],['duke','earl'],['scout','ranger'],['jester','bard'],
-    // Concepts & qualities
-    ['silver','copper'],['shadow','light'],['rose','thorn'],['morning','evening'],
-    ['truth','secret'],['gold','iron'],['crystal','amber'],['silk','velvet'],
-    ['wisdom','courage'],['order','chaos'],['grace','strength'],['swift','steady'],
-    ['old','new'],['lost','found'],['bold','calm'],['deep','vast'],
-    ['ancient','modern'],['wild','tame'],['rough','smooth'],['dark','bright'],
-    // Actions & states
-    ['rising','falling'],['hidden','known'],['broken','mended'],['frozen','melting'],
-    ['sleeping','waking'],['hunting','hiding'],['building','burning'],['sailing','anchored'],
-    ['growing','fading'],['laughing','weeping'],['rushing','waiting'],['giving','taking'],
-    // Colours & materials
-    ['crimson','ivory'],['jade','obsidian'],['scarlet','indigo'],['ebony','ivory'],
-    ['bronze','marble'],['cedar','pine'],['flint','clay'],['linen','wool'],
-    // Misc evocative pairs
-    ['ghost','echo'],['myth','legend'],['riddle','cipher'],['storm','calm'],
-    ['feast','famine'],['luck','fate'],['dream','omen'],['spark','ember'],
-    ['crown','exile'],['glory','ruin'],['dawn','eclipse'],['oath','betrayal']
-  ];
+// Word pair lists. Both keep no-repeat memory of the last 10 pairs used per language.
+const PAIRS_EN = [
+  // Nature
+  ['north','south'],['river','lake'],['mountain','valley'],['fire','ice'],
+  ['thunder','lightning'],['sun','moon'],['dawn','dusk'],['ocean','desert'],
+  ['forest','meadow'],['rain','snow'],['wind','tide'],['stone','feather'],
+  ['cave','cliff'],['spring','autumn'],['frost','flame'],['cloud','shadow'],
+  ['volcano','glacier'],['delta','canyon'],['marsh','dune'],['creek','pond'],
+  // Animals
+  ['wolf','fox'],['cat','dog'],['eagle','owl'],['lion','tiger'],
+  ['shark','whale'],['bear','deer'],['crow','dove'],['horse','donkey'],
+  ['snake','lizard'],['rabbit','hare'],['spider','fly'],['hawk','sparrow'],
+  ['salmon','trout'],['seal','otter'],['raven','magpie'],['lynx','panther'],
+  ['bison','elk'],['crane','heron'],['beetle','moth'],['crab','lobster'],
+  // Objects
+  ['anchor','compass'],['sword','shield'],['key','lock'],['crown','throne'],
+  ['candle','lantern'],['bridge','tunnel'],['mirror','window'],['drum','trumpet'],
+  ['hammer','nail'],['needle','thread'],['bow','arrow'],['rope','chain'],
+  ['lens','prism'],['coin','stamp'],['bell','clock'],['map','compass'],
+  ['quill','ink'],['flask','vial'],['mask','cloak'],['ring','bracelet'],
+  // Food & drink
+  ['salt','pepper'],['sugar','spice'],['bread','butter'],['wine','beer'],
+  ['coffee','tea'],['honey','jam'],['lemon','lime'],['mint','basil'],
+  ['olive','grape'],['apple','pear'],['garlic','onion'],['rice','pasta'],
+  ['cream','custard'],['bacon','egg'],['walnut','almond'],['cherry','plum'],
+  ['ginger','cinnamon'],['vanilla','cocoa'],['mango','papaya'],['fig','date'],
+  // Places & structures
+  ['castle','tower'],['port','harbour'],['palace','temple'],['market','square'],
+  ['chapel','abbey'],['inn','tavern'],['forge','mill'],['barn','stable'],
+  ['lighthouse','beacon'],['cellar','attic'],['garden','courtyard'],['vault','crypt'],
+  ['arena','colosseum'],['plaza','boulevard'],['pier','jetty'],['depot','station'],
+  ['ranch','farm'],['manor','cottage'],['citadel','fortress'],['shrine','altar'],
+  // People & roles
+  ['captain','sailor'],['knight','squire'],['king','queen'],['hunter','tracker'],
+  ['merchant','trader'],['scholar','scribe'],['doctor','nurse'],['judge','lawyer'],
+  ['pilot','navigator'],['chef','baker'],['painter','sculptor'],['poet','author'],
+  ['guard','warden'],['spy','agent'],['herald','messenger'],['smith','carpenter'],
+  ['monk','priest'],['duke','earl'],['scout','ranger'],['jester','bard'],
+  // Concepts & qualities
+  ['silver','copper'],['shadow','light'],['rose','thorn'],['morning','evening'],
+  ['truth','secret'],['gold','iron'],['crystal','amber'],['silk','velvet'],
+  ['wisdom','courage'],['order','chaos'],['grace','strength'],['swift','steady'],
+  ['old','new'],['lost','found'],['bold','calm'],['deep','vast'],
+  ['ancient','modern'],['wild','tame'],['rough','smooth'],['dark','bright'],
+  // Actions & states
+  ['rising','falling'],['hidden','known'],['broken','mended'],['frozen','melting'],
+  ['sleeping','waking'],['hunting','hiding'],['building','burning'],['sailing','anchored'],
+  ['growing','fading'],['laughing','weeping'],['rushing','waiting'],['giving','taking'],
+  // Colours & materials
+  ['crimson','ivory'],['jade','obsidian'],['scarlet','indigo'],['ebony','ivory'],
+  ['bronze','marble'],['cedar','pine'],['flint','clay'],['linen','wool'],
+  // Misc evocative pairs
+  ['ghost','echo'],['myth','legend'],['riddle','cipher'],['storm','calm'],
+  ['feast','famine'],['luck','fate'],['dream','omen'],['spark','ember'],
+  ['crown','exile'],['glory','ruin'],['dawn','eclipse'],['oath','betrayal']
+];
+
+// Swedish word pairs — leaning everyday and conversational so they're easy to slip into talk.
+// Mix of: clean translations, distinctly Swedish cultural pairs, and common-life pairs.
+const PAIRS_SV = [
+  // Natur
+  ['norr','söder'],['öst','väst'],['hav','sjö'],['skog','äng'],
+  ['berg','dal'],['eld','is'],['sol','måne'],['regn','snö'],
+  ['vind','våg'],['sten','fjäder'],['vår','höst'],['sommar','vinter'],
+  ['gryning','skymning'],['moln','dimma'],['bäck','damm'],['strand','klippa'],
+  ['å','flod'],['kust','ö'],['stjärna','planet'],['himmel','jord'],
+  // Djur (med fokus på sådana svenskar känner igen)
+  ['älg','ren'],['räv','varg'],['katt','hund'],['björn','lo'],
+  ['hare','kanin'],['örn','uggla'],['kråka','skata'],['lax','gädda'],
+  ['säl','utter'],['häst','åsna'],['får','get'],['ko','gris'],
+  ['mygg','fluga'],['bi','geting'],['ekorre','igelkott'],['orm','ödla'],
+  // Föremål
+  ['nyckel','lås'],['hammare','spik'],['nål','tråd'],['bok','penna'],
+  ['kniv','gaffel'],['sked','tallrik'],['kopp','glas'],['stol','bord'],
+  ['lampa','låga'],['spegel','fönster'],['dörr','vägg'],['matta','kudde'],
+  ['paraply','jacka'],['mössa','vante'],['skor','stövlar'],['väska','plånbok'],
+  // Mat och dryck
+  ['salt','peppar'],['socker','kanel'],['bröd','smör'],['ost','skinka'],
+  ['kaffe','te'],['öl','vin'],['mjölk','grädde'],['äpple','päron'],
+  ['lök','vitlök'],['potatis','morot'],['kött','fisk'],['ris','pasta'],
+  ['choklad','kola'],['glass','tårta'],['bulle','kaka'],['sylt','marmelad'],
+  // Svenska klassiker
+  ['fika','lunch'],['frukost','middag'],['midsommar','jul'],['påsk','valborg'],
+  ['kanelbulle','semla'],['knäckebröd','rågbröd'],['surströmming','sill'],['lingon','blåbär'],
+  ['sommarstuga','lägenhet'],['bastu','badrum'],['altan','balkong'],['trädgård','gård'],
+  // Platser
+  ['stad','by'],['gata','torg'],['skola','jobb'],['affär','marknad'],
+  ['kyrka','kloster'],['slott','torn'],['hamn','brygga'],['station','perrong'],
+  ['kök','vardagsrum'],['sovrum','hall'],['källare','garderob'],['garage','förråd'],
+  // Människor och roller
+  ['kung','drottning'],['kapten','styrman'],['läkare','sköterska'],['lärare','elev'],
+  ['kock','bagare'],['polis','vakt'],['författare','poet'],['målare','skulptör'],
+  ['bonde','jägare'],['pilot','sjöman'],['chef','kollega'],['granne','vän'],
+  // Egenskaper
+  ['gammal','ung'],['stor','liten'],['snabb','långsam'],['varm','kall'],
+  ['ljus','mörk'],['tyst','högljudd'],['mjuk','hård'],['djup','grund'],
+  ['lätt','tung'],['söt','sur'],['fräsch','smutsig'],['glad','ledsen'],
+  // Färger och material
+  ['silver','guld'],['koppar','järn'],['trä','metall'],['siden','ull'],
+  ['röd','blå'],['grön','gul'],['svart','vit'],['brun','grå'],
+  // Vardag och färdmedel
+  ['bil','cykel'],['buss','tåg'],['flyg','båt'],['tunnelbana','spårvagn'],
+  ['tidning','tidskrift'],['radio','tv'],['telefon','dator'],['post','brev'],
+  // Abstrakta par
+  ['sanning','lögn'],['hopp','rädsla'],['minne','dröm'],['början','slut'],
+  ['fred','krig'],['tro','tvivel'],['vänskap','kärlek'],['tystnad','musik']
+];
+
+const usedPairs = { en: [], sv: [] };
+function generatePasswords(lang){
+  const list = lang === 'sv' ? PAIRS_SV : PAIRS_EN;
+  const used = lang === 'sv' ? usedPairs.sv : usedPairs.en;
   // Filter out recently used pairs
-  const available=pairs.filter((_,i)=>!usedPairs.includes(i));
-  const pool=available.length>0?available:pairs;
-  const idx=Math.floor(Math.random()*pool.length);
-  const chosen=pool[idx];
-  // Track used index (map back to original pairs array)
-  const origIdx=pairs.indexOf(chosen);
-  usedPairs.push(origIdx);
-  if(usedPairs.length>10) usedPairs.shift();
+  const available = list.filter((_,i)=>!used.includes(i));
+  const pool = available.length>0 ? available : list;
+  const idx = Math.floor(Math.random()*pool.length);
+  const chosen = pool[idx];
+  // Track used index (map back to original list)
+  const origIdx = list.indexOf(chosen);
+  used.push(origIdx);
+  if(used.length>10) used.shift();
   return chosen;
 }
 
