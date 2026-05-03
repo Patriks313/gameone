@@ -1,11 +1,13 @@
 <!DOCTYPE html>
+
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 5.3
+     SHADOW COUNCIL · Version: 5.4
      Edit the number above to update the version shown in the app.
      
      Created by Patrik Stalbarg
      © 2026 greblats.com — All rights reserved
 ═══════════════════════════════ -->
+
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -94,10 +96,11 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
 <!-- Fixed footer — always visible on all screens -->
-<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.3</p>
+<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.4</p>
 <p style="position:fixed;bottom:68px;left:12px;font-size:10px;color:var(--ink3);opacity:0.5;z-index:999;">© 2026 Patrik S · greblats.com · <a href="/privacy.html" style="color:var(--ink3);">Privacy</a></p>
 
 <!-- LANDING -->
+
 <div class="screen active" id="s-landing">
   <div class="spacer"></div>
   <div class="ornament">✦ ✦ ✦</div>
@@ -169,6 +172,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <!-- HOST LOBBY -->
+
 <div class="screen" id="s-host-lobby">
   <div class="eyebrow" style="margin-top:0.5rem;">Game leader</div>
   <h2 style="margin-bottom:0.3rem;">Waiting for players</h2>
@@ -191,6 +195,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <!-- PLAYER WAITING -->
+
 <div class="screen" id="s-player-wait">
   <div class="spacer"></div>
   <div class="ornament">✦</div>
@@ -210,6 +215,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <!-- ROLE REVEAL -->
+
 <div class="screen" id="s-role-reveal">
   <div class="eyebrow" style="margin-top:0.5rem;">Your role</div>
   <h2 style="margin-bottom:0.3rem;">Role assigned</h2>
@@ -230,6 +236,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <!-- DISCUSSION -->
+
 <div class="screen" id="s-discussion">
   <div class="eyebrow" style="margin-top:0.5rem;">Round <span id="disc-round">1</span></div>
   <h2 style="margin-bottom:0.3rem;">Discussion</h2>
@@ -250,6 +257,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <!-- VOTING -->
+
 <div class="screen" id="s-voting">
   <div class="eyebrow" style="margin-top:0.5rem;">Voting is open</div>
   <h2 style="margin-bottom:0.3rem;">Who should be eliminated?</h2>
@@ -269,6 +277,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <!-- VOTE RESULT -->
+
 <div class="screen" id="s-vote-result">
   <div class="eyebrow" style="margin-top:0.5rem;">Vote result</div>
   <h2 style="margin-bottom:1rem;" id="result-round-label">Round 1</h2>
@@ -290,6 +299,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <!-- WIN SCREEN -->
+
 <div class="screen" id="s-win">
   <div class="spacer"></div>
   <div class="win-banner">
@@ -319,6 +329,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
 </div>
 
 <!-- CANCELLED -->
+
 <div class="screen" id="s-cancelled">
   <div class="spacer"></div>
   <div class="ornament">✦</div>
@@ -347,19 +358,22 @@ const db = getDatabase(fbapp);
 const L = { isHost:false, myName:'', room:'' };
 let unsubscribe = null;
 
-// Session persistence — survives tab reloads, throttling, OS killing the tab mid-game.
-// Uses sessionStorage so two tabs on one device keep separate identities.
+// Session persistence — survives tab reloads, throttling, OS killing the tab mid-game,
+// AND survives Android Chrome killing the tab outright (which fresh-restarts it without sessionStorage).
+// localStorage trade-off: if user opens the site in a second tab on the same device, both tabs
+// will try to resume the same game. In practice irrelevant — one phone = one player at the table.
+// Cleared explicitly on Play again / Back to start / cancellation, plus a 6-hour expiry.
 const SESSION_KEY = 'shadowcouncil_session_v1';
 function saveSession(){
   try{
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
       isHost:L.isHost, myName:L.myName, room:L.room, savedAt:Date.now()
     }));
   }catch(e){/* private mode etc — fail silently, game still works in memory */}
 }
 function loadSession(){
   try{
-    const raw=sessionStorage.getItem(SESSION_KEY);
+    const raw=localStorage.getItem(SESSION_KEY);
     if(!raw) return null;
     const s=JSON.parse(raw);
     // Drop sessions older than 6 hours — nobody plays Shadow Council that long
@@ -368,7 +382,7 @@ function loadSession(){
   }catch(e){return null;}
 }
 function clearSession(){
-  try{sessionStorage.removeItem(SESSION_KEY);}catch(e){}
+  try{localStorage.removeItem(SESSION_KEY);}catch(e){}
 }
 
 const $ = id => document.getElementById(id);
@@ -1049,5 +1063,6 @@ async function tryResume(){
 }
 tryResume();
 </script>
+
 </body>
 </html>
