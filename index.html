@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 5.4
+     SHADOW COUNCIL · Version: 5.5
      Edit the number above to update the version shown in the app.
      
      Created by Patrik Stalbarg
@@ -96,7 +96,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
 <!-- Fixed footer — always visible on all screens -->
-<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.4</p>
+<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.5</p>
 <p style="position:fixed;bottom:68px;left:12px;font-size:10px;color:var(--ink3);opacity:0.5;z-index:999;">© 2026 Patrik S · greblats.com · <a href="/privacy.html" style="color:var(--ink3);">Privacy</a></p>
 
 <!-- LANDING -->
@@ -228,6 +228,10 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div id="reveal-content" class="blurred" style="width:100%;"></div>
   <button class="btn btn-ghost" id="reveal-btn" style="margin-top:0.5rem;">Tap to reveal my role</button>
   <button class="btn btn-primary" id="reveal-done-btn" style="display:none;margin-top:0.5rem;">I've read it — continue</button>
+  <div id="reveal-waiting" style="display:none;text-align:center;margin-top:0.8rem;">
+    <p style="font-size:14px;color:var(--ink2);">Waiting for the others to confirm…</p>
+    <p style="font-size:13px;color:var(--ink3);margin-top:4px;" id="reveal-ready-count"></p>
+  </div>
   <div style="width:100%;margin-top:1rem;margin-bottom:1rem;min-height:100px;">
     <ins class="adsbygoogle"
          style="display:block"
@@ -299,7 +303,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div id="game-over-trigger" style="width:100%;display:none;">
     <button class="btn btn-gold" id="see-result-btn">See final result ✦</button>
   </div>
-  <button class="btn bp" id="release-btn" style="display:none;margin-top:0.5rem;">Release results to everyone</button>
+  <button class="btn btn-primary" id="release-btn" style="display:none;margin-top:0.5rem;">Release results to everyone</button>
   <div class="spacer"></div>
 </div>
 
@@ -1000,15 +1004,11 @@ async function checkAllReady(g){
   const allReady=active.every(p=>ready.includes(p.name));
   if(L.isHost && allReady && active.length>0){
     if(g.status==='reveal'){
-      // First time: go to discussion round 1
+      // Role screen only appears at game start — advance to discussion, round 1.
+      // Later rounds advance via continueRound (which never re-shows the role screen),
+      // so there is no "subsequent rounds" path through here.
       await update(gref('games/'+L.room),{
         status:'discussion',votingOpen:false,votes:{},readyForNext:{}
-      });
-    } else {
-      // Subsequent rounds
-      await update(gref('games/'+L.room),{
-        status:'discussion',votingOpen:false,votes:{},
-        readyForNext:{},round:(g.round||1)+1
       });
     }
   }
@@ -1019,6 +1019,7 @@ function onGameOver(g){
   const goodWon=g.winner==='good';
   $('win-title').textContent=goodWon?'Good wins!':'Evil wins!';
   $('win-subtitle').textContent=goodWon?'Both evil players were unmasked.':'The evil pair outlasted the good.';
+  const evils=players.filter(p=>p.role==='evil');
   $('evil-reveal-chips').innerHTML=evils.map(p=>`<span class="chip">${p.name}</span>`).join('');
   $('win-passwords').textContent='"'+(g.words[0]||'?')+'" & "'+(g.words[1]||'?')+'"';
   $('win-player-list').innerHTML=players.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--parchment3);"><span style="font-weight:500;">${p.name}</span><span class="badge" style="background:var(--parchment2);border:1px solid var(--parchment3);">${p.role}${p.eliminated?' · out':''}</span></div>`).join('');
