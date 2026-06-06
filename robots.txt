@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://greblats.com/sitemap.xml
