@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 5.5
+     SHADOW COUNCIL · Version: 5.7
      Edit the number above to update the version shown in the app.
      
      Created by Patrik Stalbarg
@@ -96,7 +96,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
 <!-- Fixed footer — always visible on all screens -->
-<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.5</p>
+<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.7</p>
 <p style="position:fixed;bottom:68px;left:12px;font-size:10px;color:var(--ink3);opacity:0.5;z-index:999;">© 2026 Patrik S · greblats.com · <a href="/privacy.html" style="color:var(--ink3);">Privacy</a></p>
 
 <!-- LANDING -->
@@ -250,6 +250,11 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div class="eyebrow" style="margin-top:0.5rem;">Round <span id="disc-round">1</span></div>
   <h2 style="margin-bottom:0.3rem;">Discussion</h2>
   <p class="sub">Talk amongst yourselves. The host will open voting when ready.</p>
+  <div class="card" id="disc-arbiter-card" style="text-align:center;padding:0.8rem 1rem;display:none;">
+    <div style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:2px;">Arbiter holder this round</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;" id="disc-arbiter-name">—</div>
+    <div style="font-size:12px;color:var(--ink3);margin-top:2px;">Breaks the vote if it ends in a tie.</div>
+  </div>
   <div id="host-controls" style="width:100%;display:none;">
     <div class="card">
       <div class="section-header" style="margin-top:0;">Host controls</div>
@@ -271,6 +276,7 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <div class="eyebrow" style="margin-top:0.5rem;">Voting is open</div>
   <h2 style="margin-bottom:0.3rem;">Who should be eliminated?</h2>
   <p class="sub" id="voting-sub">Tap the player you think should be eliminated.</p>
+  <div id="voting-arbiter-note" style="text-align:center;font-size:13px;color:var(--ink2);margin-bottom:0.8rem;display:none;">✦ Arbiter holder this round: <strong id="voting-arbiter-name">—</strong></div>
   <div id="host-voting-controls" style="width:100%;display:none;">
     <div class="card">
       <div class="section-header" style="margin-top:0;">Host controls</div>
@@ -304,6 +310,28 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
     <button class="btn btn-gold" id="see-result-btn">See final result ✦</button>
   </div>
   <button class="btn btn-primary" id="release-btn" style="display:none;margin-top:0.5rem;">Release results to everyone</button>
+  <div class="spacer"></div>
+</div>
+
+<!-- TIEBREAK -->
+
+<div class="screen" id="s-tiebreak">
+  <div class="eyebrow" style="margin-top:0.5rem;">Tied vote</div>
+  <h2 style="margin-bottom:0.3rem;">The Arbiter decides</h2>
+  <p class="sub">The vote ended in a tie. The Arbiter holder chooses who is eliminated.</p>
+  <div class="card" style="text-align:center;">
+    <div class="eyebrow">Arbiter holder</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;" id="tiebreak-arbiter-name">—</div>
+  </div>
+  <div id="tiebreak-choices" style="width:100%;display:none;">
+    <div class="section-header">Choose who to eliminate</div>
+    <div id="tiebreak-buttons"></div>
+  </div>
+  <div id="tiebreak-waiting" style="width:100%;display:none;">
+    <div class="card" style="text-align:center;color:var(--ink2);padding:2rem 1rem;">
+      <p style="font-size:15px;">Waiting for <strong id="tiebreak-waiting-name">the Arbiter holder</strong> to decide…</p>
+    </div>
+  </div>
   <div class="spacer"></div>
 </div>
 
@@ -589,6 +617,7 @@ function listenToGame(){
     else if(g.status==='discussion')onDiscussion(g);
     else if(g.status==='voting')onVoting(g);
     else if(g.status==='closed')onClosed(g);
+    else if(g.status==='tiebreak')onTiebreak(g);
     else if(g.status==='result'){onResult(g);if(L.isHost)checkAllReady(g);}
     else if(g.status==='gameover')onGameOver(g);
   });
@@ -821,12 +850,14 @@ function onDiscussion(g){
   const active=Object.values(g.players||{}).filter(p=>!p.eliminated);
   $('disc-chips').innerHTML=active.map(p=>`<span class="chip"><span class="dot"></span>${p.name}</span>`).join('');
   $('host-controls').style.display=L.isHost?'block':'none';
+  const dkc=$('disc-arbiter-card'),dkn=$('disc-arbiter-name');
+  if(dkc&&dkn){ if(g.arbiter){dkn.textContent=g.arbiter;dkc.style.display='block';} else {dkc.style.display='none';} }
 
   if(!$('s-discussion').classList.contains('active'))show('s-discussion');
 }
 
 async function openVoting(){
-  await update(gref('games/'+L.room),{status:'voting',votingOpen:true,votes:{}});
+  await update(gref('games/'+L.room),{status:'voting',votingOpen:true,votes:{},tieChoice:null,tieCandidates:null});
 }
 
 async function closeVoting(){
@@ -876,6 +907,8 @@ function onVoting(g){
       b.addEventListener('click',()=>update(gref('games/'+L.room+'/votes'),{['v_'+L.myName]:b.dataset.t}));
     });
   }
+  const vkn=$('voting-arbiter-note'),vknm=$('voting-arbiter-name');
+  if(vkn&&vknm){ if(g.arbiter){vknm.textContent=g.arbiter;vkn.style.display='block';} else {vkn.style.display='none';} }
   if(!$('s-voting').classList.contains('active'))show('s-voting');
 }
 
@@ -908,6 +941,31 @@ async function releaseResults(){
   await update(gref('games/'+L.room),{status:'result'});
 }
 
+function onTiebreak(g){
+  const cands = g.tieCandidates || [];
+  const arbiter = g.arbiter || g.host || null;
+  $('tiebreak-arbiter-name').textContent = arbiter || '—';
+  const amArbiter = arbiter && L.myName === arbiter;
+
+  if(amArbiter){
+    $('tiebreak-waiting').style.display='none';
+    $('tiebreak-choices').style.display='block';
+    $('tiebreak-buttons').innerHTML = cands.map(n=>
+      `<button class="vote-btn" data-t="${n}"><span>${n}</span></button>`).join('');
+    $('tiebreak-buttons').querySelectorAll('.vote-btn').forEach(b=>{
+      b.addEventListener('click',()=>{
+        // Arbiter resolves the tie: record the choice and send everyone to the result.
+        update(gref('games/'+L.room),{tieChoice:b.dataset.t,status:'result'});
+      });
+    });
+  }else{
+    $('tiebreak-choices').style.display='none';
+    $('tiebreak-waiting').style.display='block';
+    $('tiebreak-waiting-name').textContent = arbiter || 'the Arbiter holder';
+  }
+  if(!$('s-tiebreak').classList.contains('active'))show('s-tiebreak');
+}
+
 async function onResult(g){
   const thisRound = g.round||1;
 
@@ -925,22 +983,31 @@ async function onResult(g){
   players.filter(p=>p.eliminated).forEach(p=>{ if(tally[p.name]===0) delete tally[p.name]; });
   const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
   const maxV=sorted[0]?sorted[0][1]:0;
+  const topCandidates = maxV>0 ? sorted.filter(([,c])=>c===maxV).map(([n])=>n) : [];
+
+  // TIE: 2+ players share the top count. Route to the Arbiter holder to decide,
+  // unless the tie has already been resolved (g.tieChoice is set). Host flips status;
+  // the listener then re-routes everyone to the tiebreak screen.
+  if(topCandidates.length>1 && !g.tieChoice){
+    if(L.isHost){
+      await update(gref('games/'+L.room),{status:'tiebreak',tieCandidates:topCandidates,tieChoice:null});
+    }
+    return;
+  }
+
   $('result-round-label').textContent='Round '+thisRound+' result';
   $('result-bars').innerHTML=sorted.map(([name,count])=>`<div class="result-row"><span class="result-name">${name}</span><div class="result-bar-wrap"><div class="result-bar" style="width:${maxV>0?(count/maxV*100):0}%"></div></div><span class="result-votes">${count}</span></div>`).join('');
 
-  const eliminated = maxV > 0 ? sorted.filter(([,c])=>c===maxV).map(([n])=>n) : [];
+  // A Arbiter choice overrides the raw tie. Otherwise it's a clean single (or zero) elimination.
+  const eliminated = g.tieChoice ? [g.tieChoice] : topCandidates;
   const elPlayers = eliminated.map(n=>players.find(p=>p.name===n)).filter(Boolean);
 
   if(eliminated.length===0){
     $('eliminated-name').textContent='No votes cast — no elimination';
     $('eliminated-role-reveal').textContent='';
-  } else if(eliminated.length===1){
-    $('eliminated-name').textContent=eliminated[0];
-    const ep=elPlayers[0];
-    $('eliminated-role-reveal').textContent='Eliminated from the council';
   } else {
-    $('eliminated-name').textContent=eliminated.join(' & ');
-    $('eliminated-role-reveal').textContent='Tied vote — all eliminated from the council';
+    $('eliminated-name').textContent=eliminated[0];
+    $('eliminated-role-reveal').textContent = g.tieChoice ? 'Chosen by the Arbiter — eliminated' : 'Eliminated from the council';
   }
 
   const eliminatedNames = new Set(eliminated);
@@ -983,11 +1050,27 @@ async function onResult(g){
   }
 }
 
+// Pick the Arbiter (tie-breaker) for the round about to start.
+// Normal rounds: a random active player. Final round (2 players left): a random
+// ELIMINATED player instead — they already vote in the final, and this keeps the
+// tie-breaker neutral rather than one of the two finalists deciding their own fate.
+// Falls back to active if somehow nobody is eliminated yet.
+function pickArbitrator(players){
+  const all=Object.values(players||{});
+  const active=all.filter(p=>!p.eliminated);
+  const out=all.filter(p=>p.eliminated);
+  const isFinal=active.length<=2;
+  const pool=(isFinal && out.length)?out:active;
+  return pool.length?pool[Math.floor(Math.random()*pool.length)].name:null;
+}
+
 async function continueRound(){
   const snap=await get(gref('games/'+L.room));
   const g=snap.val();
+  const arbiter=pickArbitrator(g.players);
   await update(gref('games/'+L.room),{
-    status:'discussion', votingOpen:false, votes:{}, round:(g.round||1)+1
+    status:'discussion', votingOpen:false, votes:{}, round:(g.round||1)+1,
+    arbiter, tieChoice:null, tieCandidates:null
   });
 }
 
@@ -1007,8 +1090,10 @@ async function checkAllReady(g){
       // Role screen only appears at game start — advance to discussion, round 1.
       // Later rounds advance via continueRound (which never re-shows the role screen),
       // so there is no "subsequent rounds" path through here.
+      const arbiter=pickArbitrator(g.players);
       await update(gref('games/'+L.room),{
-        status:'discussion',votingOpen:false,votes:{},readyForNext:{}
+        status:'discussion',votingOpen:false,votes:{},readyForNext:{},
+        arbiter, tieChoice:null, tieCandidates:null
       });
     }
   }
