@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <!-- ═══════════════════════════════
-     SHADOW COUNCIL · Version: 5.8
+     SHADOW COUNCIL · Version: 5.9
      Edit the number above to update the version shown in the app.
      
      Created by Patrik Stalbarg
@@ -11,12 +11,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="google-site-verification" content="ziN7YL9i7g3FSI3XygoxhXh6ACT6tT4PsjykcPoknqU" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="Shadow Council"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="theme-color" content="#f5f0e8"/>
+<meta name="google-site-verification" content="ziN7YL9i7g3FSI3XygoxhXh6ACT6tT4PsjykcPoknqU"/>
 <!-- Inline manifest keeps the one-file philosophy. The base64 string is the JSON below. -->
 <link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Shadow Council","short_name":"Shadow Council","start_url":"/","display":"standalone","background_color":"%23f5f0e8","theme_color":"%23f5f0e8","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27><rect width=%27512%27 height=%27512%27 rx=%2796%27 fill=%27%23f5f0e8%27/><text x=%27256%27 y=%27315%27 font-family=%27Georgia,serif%27 font-size=%27260%27 font-weight=%27600%27 text-anchor=%27middle%27 fill=%27%230e0d0b%27>SC</text><text x=%27256%27 y=%27430%27 font-family=%27Georgia,serif%27 font-size=%2748%27 text-anchor=%27middle%27 fill=%27%23b8862a%27>%E2%9C%A6 %E2%9C%A6 %E2%9C%A6</text></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}'/>
 <link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27><rect width=%27512%27 height=%27512%27 rx=%2796%27 fill=%27%23f5f0e8%27/><text x=%27256%27 y=%27315%27 font-family=%27Georgia,serif%27 font-size=%27260%27 font-weight=%27600%27 text-anchor=%27middle%27 fill=%27%230e0d0b%27>SC</text></svg>'/>
@@ -97,8 +97,11 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
 <!-- Fixed footer — always visible on all screens -->
-<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.8</p>
+<p style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--ink3);opacity:0.5;pointer-events:none;z-index:999;">v5.9</p>
 <p style="position:fixed;bottom:68px;left:12px;font-size:10px;color:var(--ink3);opacity:0.5;z-index:999;">© 2026 Patrik S · greblats.com · <a href="/privacy.html" style="color:var(--ink3);">Privacy</a></p>
+<!-- Host-only global End game control — lets the host abort from ANY active screen.
+     bottom:90px keeps it clear above the fixed ad banner (60px) and footer labels (68px); z-index 1000 sits above both. -->
+<button id="global-end-game" style="display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:1000;background:#c0392b;color:#fff;border:none;border-radius:999px;padding:8px 18px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.18);cursor:pointer;-webkit-tap-highlight-color:transparent;">End game</button>
 
 <!-- LANDING -->
 
@@ -266,7 +269,6 @@ hr{border:none;border-top:1px solid var(--parchment3);margin:1rem 0;width:100%;}
     <div class="card">
       <div class="section-header" style="margin-top:0;">Host controls</div>
       <button class="btn btn-primary" id="open-vote-btn">Open voting</button>
-      <button class="btn btn-danger" id="end-game-btn" style="margin-top:8px;">End game</button>
     </div>
   </div>
 
@@ -551,7 +553,7 @@ $('reveal-btn').addEventListener('click', revealRole);
 $('reveal-done-btn').addEventListener('click', goToDiscussion);
 $('open-vote-btn').addEventListener('click', openVoting);
 $('force-close-btn').addEventListener('click', closeVoting);
-$('end-game-btn').addEventListener('click', cancelGame);
+$('global-end-game').addEventListener('click', cancelGame);
 $('continue-btn').addEventListener('click', continueRound);
 $('see-result-btn').addEventListener('click', ()=>show('s-win'));
 $('release-btn').addEventListener('click', releaseResults);
@@ -612,11 +614,23 @@ async function joinGame(){
   }
 }
 
+// Host-only End game button: shown only to the host, and only while a game is actually in play.
+// Hidden on landing/lobby (lobby host already has Cancel) and on win/cancelled.
+function updateHostExit(status){
+  const b=$('global-end-game');
+  if(!b) return;
+  const inPlay=['reveal','discussion','voting','closed','tiebreak','result'].includes(status);
+  b.style.display=(L.isHost && inPlay)?'block':'none';
+}
+
 function listenToGame(){
   if(unsubscribe)unsubscribe();
   unsubscribe=onValue(gref('games/'+L.room),snap=>{
     if(!snap.exists()){goCancelled();return;}
     const g=snap.val();
+
+    // Host-only End game button: visible during any active game, hidden once it's over/cancelled.
+    updateHostExit(g.status);
 
     if(g.status==='cancelled'){goCancelled();return;}
     if(g.status==='lobby')onLobby(g);
@@ -1121,6 +1135,7 @@ function onGameOver(g){
 async function cancelGame(){
   if(!confirm('End the game for everyone?'))return;
   if(unsubscribe){unsubscribe();unsubscribe=null;}
+  updateHostExit(null);
   await update(gref('games/'+L.room),{status:'cancelled'});
   clearSession();
   show('s-cancelled');
@@ -1128,6 +1143,7 @@ async function cancelGame(){
 
 function goCancelled(){
   if(unsubscribe){unsubscribe();unsubscribe=null;}
+  updateHostExit(null);
   clearSession();
   if(!$('s-cancelled').classList.contains('active'))show('s-cancelled');
 }
